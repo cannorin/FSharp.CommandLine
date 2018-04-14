@@ -5,8 +5,8 @@ open System.Reflection
 [<assembly: AssemblyTitleAttribute("FSharp.CommandLine")>]
 [<assembly: AssemblyProductAttribute("FSharp.CommandLine")>]
 [<assembly: AssemblyDescriptionAttribute("A framework for building command line application in F#")>]
-[<assembly: AssemblyVersionAttribute("1.0.3025.10554")>]
-[<assembly: AssemblyFileVersionAttribute("1.0.3025.10554")>]
+[<assembly: AssemblyVersionAttribute("1.0.3025.10813")>]
+[<assembly: AssemblyFileVersionAttribute("1.0.3025.10813")>]
 [<assembly: AssemblyConfigurationAttribute("Release")>]
 do ()
 
@@ -14,6 +14,6 @@ module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyTitle = "FSharp.CommandLine"
     let [<Literal>] AssemblyProduct = "FSharp.CommandLine"
     let [<Literal>] AssemblyDescription = "A framework for building command line application in F#"
-    let [<Literal>] AssemblyVersion = "1.0.3025.10554"
-    let [<Literal>] AssemblyFileVersion = "1.0.3025.10554"
+    let [<Literal>] AssemblyVersion = "1.0.3025.10813"
+    let [<Literal>] AssemblyFileVersion = "1.0.3025.10813"
     let [<Literal>] AssemblyConfiguration = "Release"

@@ -51,15 +51,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '77', 77)" onmouseover="showTip(event, '77', 77)">
+          <code onmouseout="hideTip(event, '76', 76)" onmouseover="showTip(event, '76', 76)">
             Bind(c, f)
           </code>
-          <div class="tip" id="77">
-            <strong>Signature:</strong> (c:ICommand&lt;&#39;?7220&gt; * f:(&#39;?7220 -&gt; Command&lt;&#39;?7221&gt;)) -&gt; Command&lt;&#39;?7221&gt;<br />
-                          <strong>Type parameters:</strong> '?7220, '?7221          </div>
+          <div class="tip" id="76">
+            <strong>Signature:</strong> (c:ICommand&lt;&#39;?7649&gt; * f:(&#39;?7649 -&gt; Command&lt;&#39;?7650&gt;)) -&gt; Command&lt;&#39;?7650&gt;<br />
+                          <strong>Type parameters:</strong> '?7649, '?7650          </div>
         </td>
         <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L168-168" class="github-link">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L170-170" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '77', 77)" onmouseover="showTip(event, '77', 77)">
+            Combine(a, b)
+          </code>
+          <div class="tip" id="77">
+            <strong>Signature:</strong> (a:ICommand&lt;unit&gt; * b:Command&lt;&#39;?7656&gt;) -&gt; Command&lt;&#39;?7656&gt;<br />
+                          <strong>Type parameters:</strong> '?7656          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L173-173" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -70,14 +88,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '78', 78)" onmouseover="showTip(event, '78', 78)">
-            Combine(a, b)
+            Description(co, x)
           </code>
           <div class="tip" id="78">
-            <strong>Signature:</strong> (a:ICommand&lt;unit&gt; * b:Command&lt;&#39;?7227&gt;) -&gt; Command&lt;&#39;?7227&gt;<br />
-                          <strong>Type parameters:</strong> '?7227          </div>
+            <strong>Signature:</strong> (co:Command&lt;&#39;?7661&gt; * x:string) -&gt; Command&lt;&#39;?7661&gt;<br />
+                          <strong>Type parameters:</strong> '?7661          </div>
         </td>
         <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L171-171" class="github-link">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L179-179" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -88,11 +106,11 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '79', 79)" onmouseover="showTip(event, '79', 79)">
-            Description(co, x)
+            Name(co, x)
           </code>
           <div class="tip" id="79">
-            <strong>Signature:</strong> (co:Command&lt;&#39;?7232&gt; * x:string) -&gt; Command&lt;&#39;?7232&gt;<br />
-                          <strong>Type parameters:</strong> '?7232          </div>
+            <strong>Signature:</strong> (co:Command&lt;&#39;?7659&gt; * x:string) -&gt; Command&lt;&#39;?7659&gt;<br />
+                          <strong>Type parameters:</strong> '?7659          </div>
         </td>
         <td class="xmldoc">
             <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L177-177" class="github-link">
@@ -106,14 +124,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '80', 80)" onmouseover="showTip(event, '80', 80)">
-            Name(co, x)
+            Preprocess(co)
           </code>
           <div class="tip" id="80">
-            <strong>Signature:</strong> (co:Command&lt;&#39;?7230&gt; * x:string) -&gt; Command&lt;&#39;?7230&gt;<br />
-                          <strong>Type parameters:</strong> '?7230          </div>
+            <strong>Signature:</strong> co:Command&lt;&#39;?7667&gt; -&gt; Command&lt;&#39;?7667&gt;<br />
+                          <strong>Type parameters:</strong> '?7667          </div>
         </td>
         <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L175-175" class="github-link">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L185-185" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -124,14 +142,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '81', 81)" onmouseover="showTip(event, '81', 81)">
-            Preprocess(co)
+            Return(x)
           </code>
           <div class="tip" id="81">
-            <strong>Signature:</strong> co:Command&lt;&#39;?7238&gt; -&gt; Command&lt;&#39;?7238&gt;<br />
-                          <strong>Type parameters:</strong> '?7238          </div>
+            <strong>Signature:</strong> x:&#39;?7652 -&gt; Command&lt;&#39;?7652&gt;<br />
+                          <strong>Type parameters:</strong> '?7652          </div>
         </td>
         <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L183-183" class="github-link">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L171-171" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -142,14 +160,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '82', 82)" onmouseover="showTip(event, '82', 82)">
-            Return(x)
+            ReturnFrom(x)
           </code>
           <div class="tip" id="82">
-            <strong>Signature:</strong> x:&#39;?7223 -&gt; Command&lt;&#39;?7223&gt;<br />
-                          <strong>Type parameters:</strong> '?7223          </div>
+            <strong>Signature:</strong> x:&#39;?7654 -&gt; &#39;?7654<br />
+                          <strong>Type parameters:</strong> '?7654          </div>
         </td>
         <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L169-169" class="github-link">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L172-172" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -160,47 +178,11 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '83', 83)" onmouseover="showTip(event, '83', 83)">
-            ReturnFrom(x)
-          </code>
-          <div class="tip" id="83">
-            <strong>Signature:</strong> x:&#39;?7225 -&gt; &#39;?7225<br />
-                          <strong>Type parameters:</strong> '?7225          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L170-170" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '84', 84)" onmouseover="showTip(event, '84', 84)">
             Subcommands(co, xs)
           </code>
-          <div class="tip" id="84">
-            <strong>Signature:</strong> (co:Command&lt;&#39;?7234&gt; * xs:ICommand&lt;int&gt; list) -&gt; Command&lt;&#39;?7234&gt;<br />
-                          <strong>Type parameters:</strong> '?7234          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L179-179" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '85', 85)" onmouseover="showTip(event, '85', 85)">
-            Suggests(co, f)
-          </code>
-          <div class="tip" id="85">
-            <strong>Signature:</strong> (co:Command&lt;&#39;?7236&gt; * f:(Args -&gt; CommandSuggestion list)) -&gt; Command&lt;&#39;?7236&gt;<br />
-                          <strong>Type parameters:</strong> '?7236          </div>
+          <div class="tip" id="83">
+            <strong>Signature:</strong> (co:Command&lt;&#39;?7663&gt; * xs:ICommand&lt;int&gt; list) -&gt; Command&lt;&#39;?7663&gt;<br />
+                          <strong>Type parameters:</strong> '?7663          </div>
         </td>
         <td class="xmldoc">
             <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L181-181" class="github-link">
@@ -213,15 +195,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '86', 86)" onmouseover="showTip(event, '86', 86)">
+          <code onmouseout="hideTip(event, '84', 84)" onmouseover="showTip(event, '84', 84)">
+            Suggests(co, f)
+          </code>
+          <div class="tip" id="84">
+            <strong>Signature:</strong> (co:Command&lt;&#39;?7665&gt; * f:(Args -&gt; CommandSuggestion list)) -&gt; Command&lt;&#39;?7665&gt;<br />
+                          <strong>Type parameters:</strong> '?7665          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L183-183" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '85', 85)" onmouseover="showTip(event, '85', 85)">
             Zero()
           </code>
-          <div class="tip" id="86">
+          <div class="tip" id="85">
             <strong>Signature:</strong> unit -&gt; Command&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L173-173" class="github-link">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L175-175" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

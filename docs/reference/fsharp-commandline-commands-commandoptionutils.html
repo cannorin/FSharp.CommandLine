@@ -54,15 +54,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '11', 11)" onmouseover="showTip(event, '11', 11)">
+          <code onmouseout="hideTip(event, '10', 10)" onmouseover="showTip(event, '10', 10)">
             augment f c
           </code>
-          <div class="tip" id="11">
-            <strong>Signature:</strong> f:(CommandOption&lt;&#39;?7273&gt; -&gt; Args -&gt; &#39;?7274 * Args) -&gt; c:CommandOption&lt;&#39;?7273&gt; -&gt; AugmentedCommandOption&lt;&#39;?7273,&#39;?7274&gt;<br />
-                          <strong>Type parameters:</strong> '?7273, '?7274          </div>
+          <div class="tip" id="10">
+            <strong>Signature:</strong> f:(CommandOption&lt;&#39;?7700&gt; -&gt; Args -&gt; &#39;?7701 * Args) -&gt; c:CommandOption&lt;&#39;?7700&gt; -&gt; AugmentedCommandOption&lt;&#39;?7700,&#39;?7701&gt;<br />
+                          <strong>Type parameters:</strong> '?7700, '?7701          </div>
         </td>
         <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L124-124" class="github-link">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L126-126" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '11', 11)" onmouseover="showTip(event, '11', 11)">
+            map f ac
+          </code>
+          <div class="tip" id="11">
+            <strong>Signature:</strong> f:(&#39;?7703 -&gt; &#39;?7704) -&gt; ac:AugmentedCommandOption&lt;&#39;?7705,&#39;?7703&gt; -&gt; AugmentedCommandOption&lt;&#39;?7705,&#39;?7704&gt;<br />
+                          <strong>Type parameters:</strong> '?7703, '?7704, '?7705          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L127-127" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -73,14 +91,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '12', 12)" onmouseover="showTip(event, '12', 12)">
-            map f ac
+            whenMissingUse v co
           </code>
           <div class="tip" id="12">
-            <strong>Signature:</strong> f:(&#39;?7276 -&gt; &#39;?7277) -&gt; ac:AugmentedCommandOption&lt;&#39;?7278,&#39;?7276&gt; -&gt; AugmentedCommandOption&lt;&#39;?7278,&#39;?7277&gt;<br />
-                          <strong>Type parameters:</strong> '?7276, '?7277, '?7278          </div>
+            <strong>Signature:</strong> v:&#39;?7711 -&gt; co:AugmentedCommandOption&lt;&#39;?7712,&#39;?7711 option&gt; -&gt; AugmentedCommandOption&lt;&#39;?7712,&#39;?7711&gt;<br />
+                          <strong>Type parameters:</strong> '?7711, '?7712          </div>
         </td>
         <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L125-125" class="github-link">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L144-144" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -91,14 +109,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '13', 13)" onmouseover="showTip(event, '13', 13)">
-            whenMissingUse v co
+            zeroOrExactlyOne co
           </code>
           <div class="tip" id="13">
-            <strong>Signature:</strong> v:&#39;?7284 -&gt; co:AugmentedCommandOption&lt;&#39;?7285,&#39;?7284 option&gt; -&gt; AugmentedCommandOption&lt;&#39;?7285,&#39;?7284&gt;<br />
-                          <strong>Type parameters:</strong> '?7284, '?7285          </div>
+            <strong>Signature:</strong> co:CommandOption&lt;&#39;?7709&gt; -&gt; AugmentedCommandOption&lt;&#39;?7709,&#39;?7709 option&gt;<br />
+                          <strong>Type parameters:</strong> '?7709          </div>
         </td>
         <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L142-142" class="github-link">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L136-136" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -109,32 +127,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '14', 14)" onmouseover="showTip(event, '14', 14)">
-            zeroOrExactlyOne co
-          </code>
-          <div class="tip" id="14">
-            <strong>Signature:</strong> co:CommandOption&lt;&#39;?7282&gt; -&gt; AugmentedCommandOption&lt;&#39;?7282,&#39;?7282 option&gt;<br />
-                          <strong>Type parameters:</strong> '?7282          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L134-134" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '15', 15)" onmouseover="showTip(event, '15', 15)">
             zeroOrMore co
           </code>
-          <div class="tip" id="15">
-            <strong>Signature:</strong> co:CommandOption&lt;&#39;?7280&gt; -&gt; AugmentedCommandOption&lt;&#39;?7280,&#39;?7280 list&gt;<br />
-                          <strong>Type parameters:</strong> '?7280          </div>
+          <div class="tip" id="14">
+            <strong>Signature:</strong> co:CommandOption&lt;&#39;?7707&gt; -&gt; AugmentedCommandOption&lt;&#39;?7707,&#39;?7707 list&gt;<br />
+                          <strong>Type parameters:</strong> '?7707          </div>
         </td>
         <td class="xmldoc">
-            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L131-131" class="github-link">
+            <a href="https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.CommandLine/commands.fs#L133-133" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
