@@ -23,20 +23,20 @@ type Command<'a> = {
 module Command =
   #if DEBUG
   let runAsEntryPointDebug args (cmd: #ICommand<int>) =
-    match args with
-      | x :: rest when CommandOptions.suggestOption.summary.NameRepresentations |> List.contains x ->
-        Suggestions.generate rest cmd |> Suggestions.print SuggestionBackends.zsh |> printfn "%A"
+    match args |> List.ofArray |> parse ReservedCommandOptions.suggestOption with
+      | (Some sug, rest) ->
+        Suggestions.generate rest cmd |> Suggestions.print (SuggestionBackends.findByName sug) |> printfn "%A"
         (0, [])
-      | xs -> cmd.Run xs
+      | (None, xs) -> cmd.Run xs
   #endif
   
   let runAsEntryPoint args (cmd: #ICommand<int>) =
     try
-      match args |> List.ofArray with
-        | x :: rest when CommandOptions.suggestOption.summary.NameRepresentations |> List.contains x ->
-          Suggestions.generate rest cmd |> Suggestions.print SuggestionBackends.zsh |> printfn "%A"
+      match args |> List.ofArray |> parse ReservedCommandOptions.suggestOption with
+        | (Some sug, rest) ->
+          Suggestions.generate rest cmd |> Suggestions.print (SuggestionBackends.findByName sug) |> printfn "%A"
           0
-        | xs -> cmd.Run xs |> fst
+        | (None, xs) -> cmd.Run xs |> fst
     with
       | RequestExit code -> code
       | OptionParseFailed (_, msg)
@@ -149,7 +149,7 @@ let inline (>>=) c f = Command.bind f c
 let inline private preprocess (cmd: #ICommand<_>) args =
   match args with
     | [] -> []
-    | help :: _ when CommandOptions.helpOption.summary.NameRepresentations |> List.contains help ->
+    | help :: _ when ReservedCommandOptions.helpOption.summary.NameRepresentations |> List.contains help ->
       for line in Help.generate cmd do
         printfn "%s" line
       done

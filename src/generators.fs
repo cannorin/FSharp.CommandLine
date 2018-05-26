@@ -93,6 +93,8 @@ module Suggestions =
         | CommandExecutionFailed msg -> seq { yield Message msg }
 
 module SuggestionBackends =
+  open FSharp.Collections
+
   let zsh =
     let quote str = sprintf "'%s'" str
     let escape str =
@@ -132,3 +134,12 @@ module SuggestionBackends =
               |> List.map (String.concat " ")
               |> String.concat "; "
     }
+
+  let mutable impls =
+    Map.ofList [
+      ("zsh", zsh)
+    ]
+
+  let findByName name =
+    impls |> Map.tryFind name
+          |> Option.defaultWith (fun () -> sprintf "suggestion backend not exist: %s" name |> CommandExecutionFailed |> raise)

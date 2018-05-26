@@ -39,7 +39,7 @@ type CommandOption<'a> = {
       member this.Options() = [this.summary]
       member this.Subcommands() = []
 
-module CommandOptions =
+module ReservedCommandOptions =
   let helpOption = 
     { 
       summary =
@@ -61,10 +61,10 @@ module CommandOptions =
           names = ["generate-suggestions"; "generate-suggestions-incomplete"]
           description = ""
           isFlag = false
-          paramNames = []
+          paramNames = [["name"]]
           genSuggestions = (fun _ -> [])
         }
-      kind = Flag id
+      kind = TakingValueWith (UseDefault "zsh", [Some])
       style = MergedShort
     }
 
