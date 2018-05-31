@@ -66,6 +66,7 @@ type CommandOptionSummary = {
 [<Struct>]
 type CommandSummary = {
     name: string;
+    displayName: string option;
     description: string;
     paramNames: (string list) option
     genSuggestions: Args -> CommandSuggestion list

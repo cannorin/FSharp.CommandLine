@@ -46,6 +46,7 @@ let colorOption =
 let echoCommand () =
   command {
     name "echo"
+    displayName "main echo"
     description "Echo the input."
     let! color = colorOption |> CommandOptionUtils.zeroOrExactlyOne
     preprocess

@@ -10,6 +10,7 @@ type Args = string list
 type Command<'a> = {
     summary: CommandSummary ref;
     func: Args -> ('a * Args);
+
     subcommands: (ICommand<int> list) ref;
     options: (CommandOptionSummary list) ref
   }
@@ -147,6 +148,8 @@ module CommandOptionUtils =
 let inline (>>=) c f = Command.bind f c 
 
 let inline private preprocess (cmd: #ICommand<_>) args =
+  let inline checkSubCommand lastName (subcmd: #ICommand<_>) =
+    subcmd.Summary().name = lastName
   match args with
     | [] -> []
     | help :: _ when ReservedCommandOptions.helpOption.summary.NameRepresentations |> List.contains help ->
@@ -156,8 +159,8 @@ let inline private preprocess (cmd: #ICommand<_>) args =
       RequestExit 0 |> raise
     | h :: rest when h = runBeforePreprocess ->
       RaiseInfo (cmd.Summary(), cmd.Subcommands(), cmd.Options(), rest) |> raise
-    | subc :: args when cmd.Subcommands() |> List.map (fun x -> x.Summary().name) |> List.contains subc ->
-      let subcommand = cmd.Subcommands() |> List.find (fun x -> x.Summary().name = subc)
+    | subc :: args when cmd.Subcommands() |> List.exists (checkSubCommand subc) ->
+      let subcommand = cmd.Subcommands() |> List.find (checkSubCommand subc)
       let (retCode, _) = subcommand.Run args
       RequestExit retCode |> raise
     | xs when xs |> List.contains runBeforePreprocess ->
@@ -175,6 +178,8 @@ type CommandBuilder =
   member inline __.Zero () = Command.returnValue ()
   [<CustomOperation("name", MaintainsVariableSpaceUsingBind = true)>]
   member inline __.Name (co: Command<_>, x) = { co with summary = ref { !co.summary with name = x } }
+  [<CustomOperation("displayName", MaintainsVariableSpaceUsingBind = true)>]
+  member inline __.DisplayName (co: Command<_>, n) = { co with summary = ref { !co.summary with displayName = Some n } }
   [<CustomOperation("description", MaintainsVariableSpaceUsingBind = true)>]
   member inline __.Description (co: Command<_>, x) = { co with summary = ref { !co.summary with description = x } }
   [<CustomOperation("subcommands", MaintainsVariableSpaceUsingBind = true)>]

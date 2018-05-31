@@ -35,8 +35,10 @@ module Help =
               | (true, false) -> "[options]"
               | (false, true) -> "<command>"
               | (false, false) -> "<command> [options]"
+      
+      let dn = smry.displayName ?| smry.name
 
-      yield sprintf "usage: %s %s" smry.name (genParamNames smry.paramNames scs opts)
+      yield sprintf "usage: %s %s" dn (genParamNames smry.paramNames scs opts)
       yield ""
       yield smry.description
       yield ""
