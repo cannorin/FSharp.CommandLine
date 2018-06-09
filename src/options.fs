@@ -35,6 +35,7 @@ type CommandOption<'a> = {
           displayName = None
           description = this.summary.description
           paramNames = this.summary.paramNames |> List.tryHead
+          help = None
           genSuggestions = this.summary.genSuggestions << List.tryLast
         }
       member this.Options() = [this.summary]

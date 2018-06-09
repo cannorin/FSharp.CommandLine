@@ -8,52 +8,132 @@ let private getCommandInfo (cmd: #ICommand<_>) =
   with
     | RaiseInfo (x, y, z, _) -> (x, y, z)
 
+[<Struct>]
+type HelpBuilder =
+  member inline __.For (_, _) = failwith "Not supported"
+  member inline __.Yield _ : HelpElement seq = Seq.empty
+  [<CustomOperation("defaultUsage")>]
+  member inline __.Usage xs = xs |> Seq.snoc HelpUsage
+  [<CustomOperation("customUsage")>]
+  member inline __.UsageWithCustomArgs (xs, argNames) = xs |> Seq.snoc (HelpUsageCustomArgs argNames)
+  [<CustomOperation("text")>]
+  member inline __.RawText (xs, str) = xs |> Seq.snoc (HelpRawString str)
+  [<CustomOperation("allSubcommands")>]
+  member inline __.Subcommands xs = xs |> Seq.snoc HelpAllSubcommands
+  [<CustomOperation("specificSubcommands")>]
+  member inline __.SpecificSubcommands (xs, cmds) = xs |> Seq.snoc (HelpSpecificSubcommands cmds)
+  [<CustomOperation("allOptions")>]
+  member inline __.Options xs = xs |> Seq.snoc HelpAllOptions
+  [<CustomOperation("specificOptions")>]
+  member inline __.SpecificOptions (xs, opts) = xs |> Seq.snoc (HelpSpecificOptions opts)
+  [<CustomOperation("section")>]
+  member inline __.Section (xs, sectionName, section) = xs |> Seq.snoc (HelpSection(sectionName, section))
+  [<CustomOperation("emptyLine")>]
+  member inline __.EmptyLine xs = xs |> Seq.snoc HelpEmptyLine
+
+let helpText = HelpBuilder ()
 
 module Help =
-  let generate (cmd: #ICommand<_>) =
-    seq {
-      let (smry, scs, opts) = getCommandInfo cmd
+  let private prettySprint a b =
+    let indent = "                                 "
+    let indentLen = String.length indent
+    let aLen = String.length a
+    if aLen > indentLen then
+      seq {
+        yield sprintf "%s" a
+        yield sprintf "%s %s" indent b
+      }
+    else
+      seq { yield sprintf "%s %s" a (String.replicate (indentLen - aLen) " " |> sprintf "%s%s" <| b) }
 
-      let prettySprint a b =
-        let indent = "                                 "
-        let indentLen = String.length indent
-        let aLen = String.length a
-        if aLen > indentLen then
-          seq {
-            yield sprintf " %s" a
-            yield sprintf " %s %s" indent b
-          }
-        else
-          seq { yield sprintf " %s %s" a (String.replicate (indentLen - aLen) " " |> sprintf "%s%s" <| b) }
-      
-      let genParamNames pns subs options = 
-        match pns with
-          | Some xs -> xs |> String.concat " "
-          | None ->
-            match (List.isEmpty subs, List.isEmpty options) with
-              | (true, true) -> ""
-              | (true, false) -> "[options]"
-              | (false, true) -> "<command>"
-              | (false, false) -> "<command> [options]"
-      
-      let dn = smry.displayName ?| smry.name
+  let private genParamNames pns subs options = 
+    match pns with
+      | Some xs -> xs |> String.concat " "
+      | None ->
+        match (List.isEmpty subs, List.isEmpty options) with
+          | (true, true) -> ""
+          | (true, false) -> "[options]"
+          | (false, true) -> "<command>"
+          | (false, false) -> "[options] <command>"
 
-      yield sprintf "usage: %s %s" dn (genParamNames smry.paramNames scs opts)
-      yield ""
-      yield smry.description
-      yield ""
-      if List.isEmpty scs |> not then
-        yield "commands:"
-        for sc in scs do
-          let (scsmry, scsubs, scopts) = getCommandInfo sc
-          yield! prettySprint (sprintf "%s %s" scsmry.name (genParamNames scsmry.paramNames scsubs scopts)) scsmry.description
-        yield ""
-      if List.isEmpty opts |> not then
-        yield "options:"
-        for opt in opts do
-          let (pr, desc) = opt.Print()
-          yield! prettySprint pr desc
+  let interpret (generator: #ICommand<_> -> #seq<HelpElement>) (cmd: #ICommand<_>) =
+    let (smry, scs, opts) = getCommandInfo cmd
+    let dn = smry.displayName ?| smry.name
+    let rec print elems =
+      seq {
+        for elem in elems do
+          yield!
+            match elem with
+              | HelpUsage -> seq [sprintf "usage: %s %s" dn (genParamNames smry.paramNames scs opts)]
+              | HelpUsageCustomArgs args -> seq [sprintf "usage: %s %s" dn (args |> String.concat " ")]
+              | HelpRawString txt -> seq [txt]
+              | HelpAllSubcommands ->
+                seq {
+                  if List.isEmpty scs |> not then
+                    for sc in scs do
+                      let (scsmry, scsubs, scopts) = getCommandInfo sc
+                      yield! prettySprint (sprintf "%s %s" scsmry.name (genParamNames scsmry.paramNames scsubs scopts)) scsmry.description
+                    yield ""
+                }
+              | HelpSpecificSubcommands names ->
+                let scs' = scs |> List.filter (fun sc -> names |> List.contains (sc.Summary().name))
+                seq {
+                  if scs' |> List.isEmpty |> not then
+                    for sc in scs' do
+                      let (scsmry, scsubs, scopts) = getCommandInfo sc
+                      yield! prettySprint (sprintf "%s %s" scsmry.name (genParamNames scsmry.paramNames scsubs scopts)) scsmry.description
+                    yield ""
+                }
+              | HelpAllOptions ->
+                seq {
+                  if List.isEmpty opts |> not then
+                    for opt in opts do
+                      let (pr, desc) = opt.Print()
+                      yield! prettySprint pr desc
+                }
+              | HelpSpecificOptions names ->
+                let opts' = opts |> List.filter (fun opt -> names |> List.exists (fun name -> opt.names |> List.contains name))
+                seq {
+                  if List.isEmpty opts' |> not then
+                    for opt in opts' do
+                      let (pr, desc) = opt.Print()
+                      yield! prettySprint pr desc
+                }
+              | HelpSection (name, bodies) ->
+                seq {
+                  yield sprintf "%s:" name
+                  yield! print bodies |> Seq.map (fun line -> sprintf "  %s" line)
+                }
+              | HelpEmptyLine -> seq [""]
+
+      }
+    generator cmd |> print
+
+  let defaultGenerator (cmd: #ICommand<_>) =
+    let (smry, scs, opts) = getCommandInfo cmd
+    helpText {
+      defaultUsage
+      emptyLine
+      text smry.description
+      emptyLine
+      section "commands" (
+        helpText { 
+          allSubcommands
+        }
+      )
+      emptyLine
+      section "options" (
+        helpText {
+          allOptions
+        }
+      )
     }
+  
+  let generate cmd =
+    let (smry, _, _) = getCommandInfo cmd
+    match smry.help with
+      | Some help -> interpret (fun _ -> help) cmd
+      | None -> interpret defaultGenerator cmd
 
 type ISuggestionBackend =
   abstract print: CommandSuggestion list -> string

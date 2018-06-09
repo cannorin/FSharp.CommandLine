@@ -171,6 +171,14 @@ module List =
     else
       [xs]
 
+module Seq =
+
+  let inline snoc x xs =
+    seq {
+      yield! xs
+      yield x
+    }
+
 module Tuple =
   let inline map2 f g (x, y) = (f x, g y)
   let inline map3 f g h (x, y, z) = (f x, g y, h z)

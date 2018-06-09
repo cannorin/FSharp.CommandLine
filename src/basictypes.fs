@@ -3,16 +3,16 @@ module FSharp.CommandLine.BasicTypes
 
 type Args = string list
 
-[<Struct>]
-type HelpText = {
-    usage: string * string list
-    description: string
-    subcommands: (string * string) list
-    options: (string * string) list
-    additionalLines: string list
-  }
-
-let inline internal emptyHelp () = { usage=("", []); description=""; subcommands=[]; options=[]; additionalLines=[] }
+type HelpElement =
+  | HelpUsage
+  | HelpUsageCustomArgs of args: string list
+  | HelpRawString of text: string
+  | HelpAllSubcommands
+  | HelpSpecificSubcommands of names: string list
+  | HelpAllOptions
+  | HelpSpecificOptions of namesWithoutHyphen: string list
+  | HelpSection of sectionName: string * sectionBody: seq<HelpElement>
+  | HelpEmptyLine
 
 type CommandSuggestion =
   | Values of string list
@@ -69,6 +69,7 @@ type CommandSummary = {
     displayName: string option;
     description: string;
     paramNames: (string list) option
+    help: HelpElement seq option
     genSuggestions: Args -> CommandSuggestion list
   }
 

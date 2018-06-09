@@ -186,6 +186,9 @@ type CommandBuilder =
   member inline __.Subcommands (co: Command<_>, xs) = { co with subcommands = ref xs }
   [<CustomOperation("suggests", MaintainsVariableSpaceUsingBind = true)>]
   member inline __.Suggests (co: Command<_>, f) = { co with summary = ref { !co.summary with genSuggestions = f } }
+  [<CustomOperation("help", MaintainsVariableSpaceUsingBind = true)>]
+  member inline __.Help (co: Command<_>, xs: HelpElement seq) =
+    { co with summary = ref { !co.summary with help = Some xs } }
   [<CustomOperation("preprocess", MaintainsVariableSpaceUsingBind = true)>]
   member inline __.Preprocess (co: Command<_>) = 
     { co with func = co.func >> (fun (bv, args) -> let args' = preprocess co args in (bv, args')) }
