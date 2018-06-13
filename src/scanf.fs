@@ -173,3 +173,6 @@ let scanf pf =
 let tryScanf pf =
   Console.ReadLine() |> trySscanf pf
 
+// active pattern
+let (|Sscanf|_|) (format:PrintfFormat<_,_,_,_,'t>) input =
+  trySscanf format input |> Result.toOption
