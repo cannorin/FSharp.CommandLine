@@ -1,37 +1,21 @@
 module FSharp.CommandLine.Generators
-open System
 
+let rec private dig argv (cmd: ICommand<int>) =
+  let config = (cmd.Config CommandInfo.empty)
+  match argv with
+    | [] -> (cmd, [])
+    | args ->
+      match config.options |> List.choose (fun o -> o.isMatch args)
+                           |> List.tryHead with
+        | Some rest -> dig rest cmd
+        | None ->
+          match config.subcommands |> List.tryFind (fun sc -> sc.Summary().name = List.head args) with
+            | Some sc -> dig (List.tail args) sc
+            | None -> (cmd, args)
+    
 let private getCommandInfo (cmd: #ICommand<_>) =
-  try
-    cmd.Run [runBeforePreprocess] |> ignore
-    (cmd.Summary(), cmd.Subcommands(), cmd.Options())
-  with
-    | RaiseInfo (x, y, z, _) -> (x, y, z)
-
-[<Struct>]
-type HelpBuilder =
-  member inline __.For (_, _) = failwith "Not supported"
-  member inline __.Yield _ : HelpElement seq = Seq.empty
-  [<CustomOperation("defaultUsage")>]
-  member inline __.Usage xs = xs |> Seq.snoc HelpUsage
-  [<CustomOperation("customUsage")>]
-  member inline __.UsageWithCustomArgs (xs, argNames) = xs |> Seq.snoc (HelpUsageCustomArgs argNames)
-  [<CustomOperation("text")>]
-  member inline __.RawText (xs, str) = xs |> Seq.snoc (HelpRawString str)
-  [<CustomOperation("allSubcommands")>]
-  member inline __.Subcommands xs = xs |> Seq.snoc HelpAllSubcommands
-  [<CustomOperation("specificSubcommands")>]
-  member inline __.SpecificSubcommands (xs, cmds) = xs |> Seq.snoc (HelpSpecificSubcommands cmds)
-  [<CustomOperation("allOptions")>]
-  member inline __.Options xs = xs |> Seq.snoc HelpAllOptions
-  [<CustomOperation("specificOptions")>]
-  member inline __.SpecificOptions (xs, opts) = xs |> Seq.snoc (HelpSpecificOptions opts)
-  [<CustomOperation("section")>]
-  member inline __.Section (xs, sectionName, section) = xs |> Seq.snoc (HelpSection(sectionName, section))
-  [<CustomOperation("emptyLine")>]
-  member inline __.EmptyLine xs = xs |> Seq.snoc HelpEmptyLine
-
-let helpText = HelpBuilder ()
+  let config = (cmd.Config CommandInfo.empty)
+  (config.summary, config.subcommands, config.options)
 
 module Help =
   let private prettySprint a b =
@@ -73,16 +57,14 @@ module Help =
                     for sc in scs do
                       let (scsmry, scsubs, scopts) = getCommandInfo sc
                       yield! prettySprint (sprintf "%s %s" scsmry.name (genParamNames scsmry.paramNames scsubs scopts)) scsmry.description
-                    yield ""
                 }
               | HelpSpecificSubcommands names ->
-                let scs' = scs |> List.filter (fun sc -> names |> List.contains (sc.Summary().name))
+                let scs' = scs |> List.filter (fun sc -> names |> List.contains ((sc.Config CommandInfo.empty).summary.name))
                 seq {
                   if scs' |> List.isEmpty |> not then
                     for sc in scs' do
                       let (scsmry, scsubs, scopts) = getCommandInfo sc
                       yield! prettySprint (sprintf "%s %s" scsmry.name (genParamNames scsmry.paramNames scsubs scopts)) scsmry.description
-                    yield ""
                 }
               | HelpAllOptions ->
                 seq {
@@ -116,20 +98,21 @@ module Help =
       emptyLine
       text smry.description
       emptyLine
-      section "commands" (
+      conditionalSection "commands" (fun () -> scs |> List.isEmpty |> not) (
         helpText { 
           allSubcommands
+          emptyLine
         }
       )
-      emptyLine
-      section "options" (
+      conditionalSection "options" (fun () -> opts |> List.isEmpty |> not) (
         helpText {
           allOptions
         }
       )
     }
   
-  let generate cmd =
+  let generate args cmd =
+    let (cmd, _) = dig args cmd
     let (smry, _, _) = getCommandInfo cmd
     match smry.help with
       | Some help -> interpret (fun _ -> help) cmd
@@ -142,24 +125,24 @@ module Suggestions =
   let print (backend: #ISuggestionBackend) css =
     backend.print css
 
-  let generate args (cmd: #ICommand<_>) =
+  let generate args (cmd: ICommand<int>) =
     List.ofSeq <|
       try
-        (args @ [runBeforePreprocess]) |> cmd.Run |> printfn "%A"
-        Seq.empty
+        let ((cmdsum, cmdsubs, cmdopts), remArgs) =
+          let (cmd, rem) = dig args cmd
+          (getCommandInfo cmd, rem)
+        seq {
+          for sub in cmdsubs do
+            let (scsum, _, _) = getCommandInfo sub
+            yield ValuesWithDescription [(scsum.name, scsum.description)]
+          for opt in cmdopts do
+            yield OptionSuggestion(opt.NameRepresentations, opt.description)
+          yield!
+            if (box cmdsum.genSuggestions <> null) then
+              cmdsum.genSuggestions remArgs |> Seq.ofList
+            else Seq.empty
+        }
       with
-        | RaiseInfo (cmdsum, cmdsubs, cmdopts, remArgs) ->
-          seq {
-            for sub in cmdsubs do
-              let (scsum, _, _) = getCommandInfo sub
-              yield ValuesWithDescription [(scsum.name, scsum.description)]
-            for opt in cmdopts do
-              yield OptionSuggestion(opt.NameRepresentations, opt.description)
-            yield!
-              if (box cmdsum.genSuggestions <> null) then
-                cmdsum.genSuggestions remArgs |> Seq.ofList
-              else Seq.empty
-          }
         | OptionParseFailed (opsum, _) ->
           seq {
             yield!

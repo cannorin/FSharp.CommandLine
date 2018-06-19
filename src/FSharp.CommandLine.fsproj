@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <BaseVersion>1.3.*.*</BaseVersion>
+    <BaseVersion>2.0.*.*</BaseVersion>
     <Description>A framework for building command line application in F#. Supports command line option parsing, type-safe scanf, monadic command construction, automatic help &amp; shell completion generation, and so on.</Description>
     <Authors>cannorin</Authors>
     <Product />
@@ -15,6 +15,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="prelude.fs" />
+    <Compile Include="abstraction.fs" />
     <Compile Include="scanf.fs" />
     <Compile Include="extensions.fs" />
     <Compile Include="basictypes.fs" />

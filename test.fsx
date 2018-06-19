@@ -21,7 +21,7 @@ let verbosityOption =
     names ["v"; "verbosity"]
     description "Display this amount of information in the log."
     takes (regex @"q(uiet)?$" |> asConst Quiet)
-    takes (regex @"n(ormal)?$" |> asConst Quiet)
+    takes (regex @"n(ormal)?$" |> asConst Normal)
     takes (regex @"f(ull)?$" |> asConst Full)
     takes (format("custom:%i").map (fun level -> Custom level))
     takes (format("c:%i").map (fun level -> Custom level))
@@ -41,15 +41,16 @@ let colorOption =
     takes (format "green" |> asConst ConsoleColor.Green)
     takes (format "blue"  |> asConst ConsoleColor.Blue)
     takes (format("%i,%i,%i").map (fun (r,g,b) -> nearest r g b))
+    suggests (fun _ -> [CommandSuggestion.Values["red"; "green"; "blue"]])
   } 
 
-let echoCommand () =
+let echoCommand =
   command {
     name "echo"
     displayName "main echo"
     description "Echo the input."
-    let! color = colorOption |> CommandOptionUtils.zeroOrExactlyOne
-    preprocess
+    opt color in colorOption |> CommandOption.zeroOrExactlyOne
+    do! Command.failOnUnknownOptions()
     let! args = Command.args
     do 
       let s = args |> String.concat " " 
@@ -59,15 +60,15 @@ let echoCommand () =
     return 0
   }
 
-let mainCommand () =
+let mainCommand =
   command {
     name "main"
     description "The main command."
-    let! files = fileOption |> CommandOptionUtils.zeroOrMore
-    let! verbosity = verbosityOption |> CommandOptionUtils.zeroOrExactlyOne 
-                                     |> CommandOptionUtils.whenMissingUse Normal
-    subcommands [echoCommand()]
-    preprocess
+    opt files in fileOption |> CommandOption.zeroOrMore
+    opt verbosity in verbosityOption |> CommandOption.zeroOrExactlyOne 
+                                     |> CommandOption.whenMissingUse Normal
+    subcommands [echoCommand]
+    do! Command.failOnUnknownOptions()
     do printfn "%A, %A" files verbosity
     return 0
   }
@@ -75,7 +76,7 @@ let mainCommand () =
 while true do
   printf "test> "
   let inputs = Console.ReadLine() |> String.splitBy ' ' |> String.removeEmptyEntries
-  let mc = mainCommand()
+  let mc = mainCommand
   try
     mc |> Command.runAsEntryPointDebug inputs ||> (fun code args -> printfn "(exited with %i, unused args:%A)\n" code args)
   with

@@ -46,10 +46,9 @@ let mainCommand () =
   command {
     name "main"
     description "The main command."
-    let! files = fileOption |> CommandOptionUtils.zeroOrMore
-    let! verbosity = verbosityOption |> CommandOptionUtils.zeroOrExactlyOne 
-                                     |> CommandOptionUtils.whenMissingUse Normal
-    preprocess
+    opt files in fileOption |> CommandOption.zeroOrMore
+    opt verbosity in verbosityOption |> CommandOption.zeroOrExactlyOne 
+                                     |> CommandOption.whenMissingUse Normal
     do printfn "%A, %A" files verbosity
     return 0
   }

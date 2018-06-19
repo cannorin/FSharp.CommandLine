@@ -1,6 +1,9 @@
 [<AutoOpen>]
 module FSharp.CommandLine.BasicTypes
 
+open FSharp.CommandLine.Internals.Abstraction
+open System.Runtime.CompilerServices
+
 type Args = string list
 
 type HelpElement =
@@ -13,6 +16,37 @@ type HelpElement =
   | HelpSpecificOptions of namesWithoutHyphen: string list
   | HelpSection of sectionName: string * sectionBody: seq<HelpElement>
   | HelpEmptyLine
+
+[<Struct>]
+type HelpBuilder =
+  member inline __.For (_, _) = failwith "Not supported"
+  member inline __.Yield _ : HelpElement seq = Seq.empty
+  [<CustomOperation("defaultUsage")>]
+  member inline __.Usage xs = xs |> Seq.snoc HelpUsage
+  [<CustomOperation("customUsage")>]
+  member inline __.UsageWithCustomArgs (xs, argNames) = xs |> Seq.snoc (HelpUsageCustomArgs argNames)
+  [<CustomOperation("text")>]
+  member inline __.RawText (xs, str) = xs |> Seq.snoc (HelpRawString str)
+  [<CustomOperation("allSubcommands")>]
+  member inline __.Subcommands xs = xs |> Seq.snoc HelpAllSubcommands
+  [<CustomOperation("specificSubcommands")>]
+  member inline __.SpecificSubcommands (xs, cmds) = xs |> Seq.snoc (HelpSpecificSubcommands cmds)
+  [<CustomOperation("allOptions")>]
+  member inline __.Options xs = xs |> Seq.snoc HelpAllOptions
+  [<CustomOperation("specificOptions")>]
+  member inline __.SpecificOptions (xs, opts) = xs |> Seq.snoc (HelpSpecificOptions opts)
+  [<CustomOperation("section")>]
+  member inline __.Section (xs, sectionName, section) = xs |> Seq.snoc (HelpSection(sectionName, section))
+  [<CustomOperation("conditionalSection")>]
+  member inline __.ConditionalSection (xs, sectionName, cond, section) =
+    if cond() then
+      xs |> Seq.snoc (HelpSection(sectionName, section))
+    else 
+      xs
+  [<CustomOperation("emptyLine")>]
+  member inline __.EmptyLine xs = xs |> Seq.snoc HelpEmptyLine
+
+let helpText = HelpBuilder ()
 
 type CommandSuggestion =
   | Values of string list
@@ -27,7 +61,8 @@ type CommandOptionSummary = {
     description: string;
     isFlag: bool;
     paramNames: (string list) list
-    genSuggestions: string option -> CommandSuggestion list 
+    isMatch: string list -> string list option
+    genSuggestions: string option -> CommandSuggestion list
   }
   with
     member this.Param =
@@ -73,11 +108,24 @@ type CommandSummary = {
     genSuggestions: Args -> CommandSuggestion list
   }
 
-[<Literal>]
-let internal runBeforePreprocess = "----run-before-preprocess-then-fail"
+[<Struct>]
+type CommandInfo = {
+    summary: CommandSummary
+    options: CommandOptionSummary list
+    subcommands: ICommand<int> list
+  }
+and ICommand<'a> = IStateConfig<CommandInfo, Args, 'a>
 
-type ICommand<'a> =
-  abstract member Run: Args -> ('a * Args)
-  abstract member Summary: unit -> CommandSummary
-  abstract member Subcommands: unit -> ICommand<int> list
-  abstract member Options: unit -> CommandOptionSummary list
+type CommandInfo with
+  static member empty =
+    {
+      summary = Unchecked.defaultof<CommandSummary>
+      options = []
+      subcommands = []
+    }
+
+[<Extension>]
+type ICommandExt() =
+  [<Extension>]
+  static member inline Summary(x: #ICommand<_>) =
+    (x.Config CommandInfo.empty).summary
