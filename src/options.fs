@@ -154,6 +154,27 @@ type CommandOptionBuilder<'a>(dc: unit -> CommandOption<'a>) =
 let commandOption<'a> = CommandOptionBuilder<'a> defaultCO
 let commandFlag = CommandOptionBuilder defaultCF
 
+type Command =
+  /// short-form definition of command option
+  static member inline option (_names, _format, ?_descr, ?defVal, ?_style) =
+    let mutable co =
+      commandOption {
+        names _names
+        takes (format _format)
+        description (_descr ?| "")
+        style (_style ?| SingleHyphenStyle.MergedShort)
+      }
+    defVal |> Option.iter (fun x -> co <- commandOption<_>.DefaultValue(co, x))
+    co
+  
+  /// short-form definition of command flag
+  static member inline flag (_names, ?_descr, ?_style) =
+    commandFlag {
+      names _names
+      description (_descr ?| "")
+      style (_style ?| SingleHyphenStyle.MergedShort)
+    }
+
 type private RefinedToken =
   | RFlag of string
   | RFlagDisable of string

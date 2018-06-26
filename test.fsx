@@ -60,6 +60,17 @@ let echoCommand =
     return 0
   }
 
+let plus1 =
+  command {
+    opt number in
+      commandOption {
+        names ["n"; "number"]; description "integer number."
+        takes (format("%i").withNames["num"])
+      } |> CommandOption.whenMissingUse 0
+    do printfn "num: %i" number
+    return number
+  }
+
 let mainCommand =
   command {
     name "main"
@@ -67,6 +78,7 @@ let mainCommand =
     opt files in fileOption |> CommandOption.zeroOrMore
     opt verbosity in verbosityOption |> CommandOption.zeroOrExactlyOne 
                                      |> CommandOption.whenMissingUse Normal
+    import num in plus1
     subcommands [echoCommand]
     do! Command.failOnUnknownOptions()
     do printfn "%A, %A" files verbosity

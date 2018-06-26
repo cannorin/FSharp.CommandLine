@@ -52,7 +52,7 @@ type CommandBuilder =
   member inline __.Help (co: Command<_>, xs: HelpElement seq) =
     co |> mapSummary (fun s -> { s with help = Some xs })
   [<CustomOperation("preprocess", MaintainsVariableSpaceUsingBind = true)>]
-  [<Obsolete("the 'preprocess' operator is no longer needed and does nothing now.")>]
+  [<Obsolete("the 'preprocess' operator is no longer needed and does nothing.")>]
   member inline __.Preprocess xs = xs
   [<CustomOperation("subcommands", MaintainsVariableSpaceUsingBind = true)>]
   member inline __.Subcommands (co, xs) = 
