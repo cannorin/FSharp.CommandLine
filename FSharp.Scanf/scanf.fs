@@ -1,6 +1,6 @@
 (*
-The X11 License
-scanf.fsx - type safe scanf
+The MIT License
+Scanf.fs - type safe scanf
 Copyright(c) 2018 cannorin
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,21 +19,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 *)
 
-module FSharp.CommandLine.Scanf
+// original: http://www.fssnip.net/4I/title/sscanf-parsing-with-format-strings
+
+module FSharp.Scanf
 
 open System
-open System.Text
+open System.IO
 open System.Text.RegularExpressions
 open Microsoft.FSharp.Reflection
 
 let inline private to_s x = x.ToString()
 
-/// Verify that f x, and then return x, otherwise fail witha 'format failure' message
-let private check f x = if f x then x else failwithf "format failure \"%s\"" x
+let inline private check f x = if f x then x else failwithf "format failure \"%s\"" x
 
-let private parseDecimal x = Decimal.Parse(x, System.Globalization.CultureInfo.InvariantCulture)
+let inline private parseDecimal x = Decimal.Parse(x, System.Globalization.CultureInfo.InvariantCulture)
 
-/// The supported characters for the formatter
 let private parsers =
   dict [
     'b', Boolean.Parse >> box
@@ -110,15 +110,14 @@ type PrintfFormat<'a,'b,'c,'d,'e> with
 
   member this.PrettyPrint names = this.PrettyTokenize names |> String.concat ""
  
-// Coerce integer types from int64
-let private coerce o = function
+let inline private coerce o = function
   | v when v = typeof<int32> ->
     int32(unbox<int64> o) |> box
   | v when v = typeof<uint32> ->
     uint32(unbox<int64> o) |> box
   | _ -> o
 
-let kscanf (pf: PrintfFormat<_,_,_,_,'t>) (cont: 't -> 'u) s : 'u =
+let ksscanf (pf: PrintfFormat<_,_,_,_,'t>) (cont: 't -> 'u) s : 'u =
   let formatStr  = pf.Value
   let constants  = formatStr.Split([|"%%"|], StringSplitOptions.None) 
                    |> Array.map (fun x -> x.Split(separators, StringSplitOptions.None))
@@ -155,24 +154,42 @@ let kscanf (pf: PrintfFormat<_,_,_,_,'t>) (cont: 't -> 'u) s : 'u =
   
   cont value
 
-let tryKscanf pf cont s =
+let inline tryKsscanf pf cont s =
   try
-    kscanf pf cont s |> Ok
+    ksscanf pf cont s |> Ok
   with
     | ex -> Error ex
+    
+let inline sscanf pf s  =
+  ksscanf pf id s
 
-let sscanf pf s  =
-  kscanf pf id s
+let inline trySscanf pf s =
+  tryKsscanf pf id s
 
-let trySscanf pf s =
-  tryKscanf pf id s
-
-let scanf pf =
+let inline scanf pf =
   Console.ReadLine() |> sscanf pf
 
-let tryScanf pf =
+let inline tryScanf pf =
   Console.ReadLine() |> trySscanf pf
+  
+let inline kscanf pf cont =
+  ksscanf pf cont <| Console.ReadLine()
+
+let inline tryKscanf pf cont =
+  tryKsscanf pf cont <| Console.ReadLine()
+
+let inline fscanf pf (tr: TextReader) =
+  tr.ReadLine() |> sscanf pf
+
+let inline tryFscanf pf (tr: TextReader) =
+  tr.ReadLine() |> trySscanf pf
+
+let inline kfscanf pf cont (tr: TextReader) =
+  ksscanf pf cont <| tr.ReadLine()
+
+let inline tryKfscanf pf cont (tr: TextReader) =
+  tryKsscanf pf cont <| tr.ReadLine()
 
 // active pattern
 let (|Sscanf|_|) (format:PrintfFormat<_,_,_,_,'t>) input =
-  trySscanf format input |> Result.toOption
+  trySscanf format input |> function | Ok x -> Some x | Error _ -> None

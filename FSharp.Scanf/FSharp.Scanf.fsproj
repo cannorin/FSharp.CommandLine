@@ -5,13 +5,13 @@
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <BaseVersion>2.1.*.*</BaseVersion>
-    <Description>A framework for building command line application in F#. Supports command line option parsing, type-safe scanf, monadic command construction, automatic help &amp; shell completion generation, and so on.</Description>
+    <Description>Type-safe scanf for F#</Description>
     <Authors>cannorin</Authors>
     <Product />
     <Copyright>(c) cannorin 2017-2018</Copyright>
-    <PackageProjectUrl>https://github.com/cannorin/FSharp.CommandLine</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/cannorin/FSharp.CommandLine/FSharp.Scanf</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/cannorin/FSharp.CommandLine/blob/master/LICENSE.txt</PackageLicenseUrl>
-    <PackageTags>fsharp commandline parsing framework</PackageTags>
+    <PackageTags>fsharp commandline console scanf</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -20,26 +20,14 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>..\bin\Release\</OutputPath>
   </PropertyGroup>
-
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="prelude.fs" />
-    <Compile Include="abstraction.fs" />
-    <Compile Include="extensions.fs" />
-    <Compile Include="basictypes.fs" />
-    <Compile Include="optionValues.fs" />
-    <Compile Include="exceptions.fs" />
-    <Compile Include="generators.fs" />
-    <Compile Include="options.fs" />
-    <Compile Include="commands.fs" />
+    <Compile Include="scanf.fs" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="VS2017MSBuildAutoVersioning" Version="1.0.11">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\FSharp.Scanf\FSharp.Scanf.fsproj" />
-  </ItemGroup>
+
 </Project>

@@ -1,6 +1,6 @@
 module rec FSharp.CommandLine.Commands
 open System
-open FSharp.CommandLine.Scanf
+open FSharp.Scanf
 open FSharp.CommandLine.Options
 open FSharp.CommandLine.Generators
 open FSharp.CommandLine.Internals.Abstraction

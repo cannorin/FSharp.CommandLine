@@ -1,9 +1,7 @@
 [<AutoOpen>]
 module FSharp.CommandLine.OptionValues
 open System
-open System.Linq
-open System.Collections.Generic
-open FSharp.CommandLine.Scanf
+open FSharp.Scanf
 open Microsoft.FSharp.Quotations
 open System.Text.RegularExpressions
 
@@ -15,7 +13,7 @@ type ValueFormat<'p,'st,'rd,'rl,'t,'a> = {
   with 
     static member construct (this: ValueFormat<_,_,_,_,_,_>) =
       let parser s = 
-        s |> tryKscanf this.format this.handler
+        s |> tryKsscanf this.format this.handler
           |> function Ok x -> Some x | _ -> None
       in
       let formatTokens =

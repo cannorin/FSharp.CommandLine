@@ -1,4 +1,4 @@
-#r "src/bin/Debug/net46/FSharp.CommandLine.dll"
+#r "bin/Debug/net46/FSharp.CommandLine.dll"
 #load "src/prelude.fs"
 open System
 open FSharp.CommandLine

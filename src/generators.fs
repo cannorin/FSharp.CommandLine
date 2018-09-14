@@ -191,11 +191,11 @@ module SuggestionBackends =
               |> List.filter (List.isEmpty >> not)
               |> List.groupBy List.head
               |> List.map (fun (gn, xss) ->
-                    if gn = "_arguments" then
-                      gn :: (xss |> List.map (fun xs -> xs.[1 .. List.length xs - 2]) |> List.concat) @ ["\"*: :->hoge\""]
-                    else
-                      gn :: (xss |> List.map (fun xs -> xs.[1 .. List.length xs - 1]) |> List.concat)
-                  )
+                  if gn = "_arguments" then
+                    gn :: (xss |> List.map (fun xs -> xs.[1 .. List.length xs - 2]) |> List.concat) @ ["\"*: :->hoge\""]
+                  else
+                    gn :: (xss |> List.map (fun xs -> xs.[1 .. List.length xs - 1]) |> List.concat)
+                 )
               |> List.map (String.concat " ")
               |> String.concat "; "
     }

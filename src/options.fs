@@ -1,5 +1,5 @@
 module rec FSharp.CommandLine.Options
-open FSharp.CommandLine.Scanf
+open FSharp.Scanf
 open System.Runtime.CompilerServices
 
 open CommandOption
@@ -193,20 +193,20 @@ type private RefinedToken =
         | RMaybeCombinedFlagAndValue (s, v) -> sprintf "-%s=%s" s v
         | RValue s -> s
         | RIgnoreAfter -> "--"
-
+        
 let private optionForms = [
-    tryKscanf "--" (fun () -> RIgnoreAfter)
-    tryKscanf "-%c" (RFlag << to_s);
-    tryKscanf "-%c=%s" (Tuple.map2 to_s id >> RFlagAndValue);
-    tryKscanf "--%s=%s" RFlagAndValue;
-    tryKscanf "/%s=%s" RFlagAndValue;
-    tryKscanf "--%s" RFlag;
-    tryKscanf "-%c+" (RFlag << to_s);
-    tryKscanf "-%c-" (RFlagDisable << to_s);
-    tryKscanf "-%s=%s" RMaybeCombinedFlagAndValue;
-    tryKscanf "-%s" RMaybeCombinedFlag;
-    tryKscanf "/%s" RFlag;
-    tryKscanf "%s" RValue
+    tryKsscanf "--" (fun () -> RIgnoreAfter)
+    tryKsscanf "-%c" (RFlag << to_s);
+    tryKsscanf "-%c=%s" (Tuple.map2 to_s id >> RFlagAndValue);
+    tryKsscanf "--%s=%s" RFlagAndValue;
+    tryKsscanf "/%s=%s" RFlagAndValue;
+    tryKsscanf "--%s" RFlag;
+    tryKsscanf "-%c+" (RFlag << to_s);
+    tryKsscanf "-%c-" (RFlagDisable << to_s);
+    tryKsscanf "-%s=%s" RMaybeCombinedFlagAndValue;
+    tryKsscanf "-%s" RMaybeCombinedFlag;
+    tryKsscanf "/%s" RFlag;
+    tryKsscanf "%s" RValue
   ]
 
 let rec private tokenize argv =
@@ -220,7 +220,7 @@ let rec private tokenize argv =
                            |> List.tryHead in
       if Option.isSome ro then
         yield ro.Value;
-        yield!
+        yield! 
           match ro.Value with
             | RIgnoreAfter -> t |> Seq.map RValue
             | _ -> tokenize t
