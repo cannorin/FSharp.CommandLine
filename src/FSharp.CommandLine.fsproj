@@ -4,7 +4,9 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <BaseVersion>2.1.*.*</BaseVersion>
+    <Build>$([System.DateTime]::op_Subtraction($([System.DateTime]::get_Now().get_Date()),$([System.DateTime]::new(2000,1,1))).get_TotalDays())</Build>
+    <Revision>$([MSBuild]::Divide($([System.DateTime]::get_Now().get_TimeOfDay().get_TotalSeconds()), 2).ToString('F0'))</Revision>
+    <Version>2.1.$(Build).$(Revision)</Version>
     <Description>A framework for building command line application in F#. Supports command line option parsing, type-safe scanf, monadic command construction, automatic help &amp; shell completion generation, and so on.</Description>
     <Authors>cannorin</Authors>
     <Product />
@@ -34,11 +36,6 @@
     <Compile Include="commands.fs" />
   </ItemGroup>
   
-  <ItemGroup>
-    <PackageReference Include="VS2017MSBuildAutoVersioning" Version="1.0.11">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FSharp.Scanf\FSharp.Scanf.fsproj" />
   </ItemGroup>
