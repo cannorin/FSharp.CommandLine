@@ -11,7 +11,7 @@
     <Authors>cannorin</Authors>
     <Product />
     <Copyright>(c) cannorin 2017-2018</Copyright>
-    <PackageProjectUrl>https://github.com/cannorin/FSharp.CommandLine/FSharp.Scanf</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/cannorin/FSharp.CommandLine/tree/master/FSharp.Scanf</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/cannorin/FSharp.CommandLine/blob/master/LICENSE.txt</PackageLicenseUrl>
     <PackageTags>fsharp commandline console scanf</PackageTags>
   </PropertyGroup>
