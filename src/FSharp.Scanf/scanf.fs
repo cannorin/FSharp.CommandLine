@@ -35,9 +35,13 @@ let inline internal check f x = if f x then x else failwithf "format failure \"%
 
 let inline internal parseDecimal x = Decimal.Parse(x, System.Globalization.CultureInfo.InvariantCulture)
 
+// type wrapper
+[<Struct>]
+type ScanfTypeMarker<'t> = | ScanfTypeMarker
+
 module Internal =
   [<Literal>]
-  let parserChars = "bdisuxXoeEfFgGMc"
+  let parserChars = "bdisuxXoeEfFgGMcA"
   
   let inline internal formatIntegerStr str fmt =
     match fmt with
@@ -67,81 +71,78 @@ module Internal =
     else if targetType = typeof<bigint> then bigint.Parse str |> box
     else failwithf "Unsupported type '%s'" targetType.Name
 
-  // type wrapper
-  [<Struct>]
-  type ty<'t> = Ty
-  let inline internal ty<'t> : ty<'t> = Ty
+  let inline internal typemarker<'t> : ScanfTypeMarker<'t> = ScanfTypeMarker
 
   // Compile-time resolved string-to-value parsers
   type OptimizedConverter =
-    static member inline Convert (_: ty<unit>, _, _) = ()
-    static member inline Convert (_: ty<bool>, s: string list, _) = Boolean.Parse(s.Head)
-    static member inline Convert (_: ty<string>, s: string list, _) = s.Head
-    static member inline Convert (_: ty<char>, s:string list, _) = char s.Head
-    static member inline Convert (_: ty<int8>, s: string list, formatters: char list) =
+    static member inline Convert (_: ScanfTypeMarker<unit>, _, _) = ()
+    static member inline Convert (_: ScanfTypeMarker<bool>, s: string list, _) = Boolean.Parse(s.Head)
+    static member inline Convert (_: ScanfTypeMarker<string>, s: string list, _) = s.Head
+    static member inline Convert (_: ScanfTypeMarker<char>, s:string list, _) = char s.Head
+    static member inline Convert (_: ScanfTypeMarker<int8>, s: string list, formatters: char list) =
       formatIntegerStr s.Head formatters.Head |> int8
-    static member inline Convert (_: ty<uint8>, s: string list, formatters: char list) =
+    static member inline Convert (_: ScanfTypeMarker<uint8>, s: string list, formatters: char list) =
       formatIntegerStr s.Head formatters.Head |> uint8
-    static member inline Convert (_: ty<int16>, s: string list, formatters: char list) =
+    static member inline Convert (_: ScanfTypeMarker<int16>, s: string list, formatters: char list) =
       formatIntegerStr s.Head formatters.Head |> int16
-    static member inline Convert (_: ty<uint16>, s: string list, formatters: char list) =
+    static member inline Convert (_: ScanfTypeMarker<uint16>, s: string list, formatters: char list) =
       formatIntegerStr s.Head formatters.Head |> uint16
-    static member inline Convert (_: ty<int32>, s: string list, formatters: char list) =
+    static member inline Convert (_: ScanfTypeMarker<int32>, s: string list, formatters: char list) =
       formatIntegerStr s.Head formatters.Head |> int32
-    static member inline Convert (_: ty<uint32>, s: string list, formatters: char list) =
+    static member inline Convert (_: ScanfTypeMarker<uint32>, s: string list, formatters: char list) =
       formatIntegerStr s.Head formatters.Head |> uint32
-    static member inline Convert (_: ty<int64>, s: string list, formatters: char list) =
+    static member inline Convert (_: ScanfTypeMarker<int64>, s: string list, formatters: char list) =
       formatIntegerStr s.Head formatters.Head |> int64
-    static member inline Convert (_: ty<uint64>, s: string list, formatters: char list) =
+    static member inline Convert (_: ScanfTypeMarker<uint64>, s: string list, formatters: char list) =
       formatIntegerStr s.Head formatters.Head |> uint64
-    static member inline Convert (_: ty<bigint>, s: string list, formatters: char list) =
+    static member inline Convert (_: ScanfTypeMarker<bigint>, s: string list, formatters: char list) =
       formatIntegerStr s.Head formatters.Head |> bigint.Parse
-    static member inline Convert (_: ty<float>, s:string list, _) = float s.Head
-    static member inline Convert (_: ty<float32>, s:string list, _) = float32 s.Head
-    static member inline Convert (_: ty<decimal>, s:string list, _) = parseDecimal s.Head
+    static member inline Convert (_: ScanfTypeMarker<float>, s:string list, _) = float s.Head
+    static member inline Convert (_: ScanfTypeMarker<float32>, s:string list, _) = float32 s.Head
+    static member inline Convert (_: ScanfTypeMarker<decimal>, s:string list, _) = parseDecimal s.Head
 
-  let inline internal convertFast (typ: ty< ^t >) (s: string list) (formatter:char list) =
-    let inline call_2 (_: ty< ^Converter >, _: ty< ^x >) =
+  let inline internal convertFast (typ: ScanfTypeMarker< ^t >) (s: string list) (formatter:char list) =
+    let inline call_2 (_: ScanfTypeMarker< ^Converter >, _: ScanfTypeMarker< ^x >) =
       ((^Converter or ^x): (static member Convert: _*_*_ -> ^t) typ,s,formatter)
-    let inline call   (a: ty<'a>, b: ty<'b>) = call_2 (a, b)
-    call (ty<OptimizedConverter>, typ)
+    let inline call   (a: ScanfTypeMarker<'a>, b: ScanfTypeMarker<'b>) = call_2 (a, b)
+    call (typemarker<OptimizedConverter>, typ)
 
   // 8-tuples or more are reprensented as `System.Tuple'7<_,_,_,_,_,_,_,System.Tuple<...>>`
   // but it is impossible to handle them generically
   type OptimizedConverter with
-    static member inline Convert (_: ty<'t1*'t2>, s: string list, fs: char list) =
-      convertFast ty<'t1> s fs,
-      convertFast ty<'t2> s.Tail fs.Tail
-    static member inline Convert (_: ty<'t1*'t2*'t3>, s: string list, fs: char list) =
-      convertFast ty<'t1> s fs,
-      convertFast ty<'t2> s.Tail fs.Tail,
-      convertFast ty<'t3> s.Tail.Tail fs.Tail.Tail
-    static member inline Convert (_: ty<'t1*'t2*'t3*'t4>, s: string list, fs: char list) =
-      convertFast ty<'t1> s fs,
-      convertFast ty<'t2> s.Tail fs.Tail,
-      convertFast ty<'t3> s.Tail.Tail fs.Tail.Tail,
-      convertFast ty<'t4> s.Tail.Tail.Tail fs.Tail.Tail.Tail
-    static member inline Convert (_: ty<'t1*'t2*'t3*'t4*'t5>, s: string list, fs: char list) =
-      convertFast ty<'t1> s fs,
-      convertFast ty<'t2> s.Tail fs.Tail,
-      convertFast ty<'t3> s.Tail.Tail fs.Tail.Tail,
-      convertFast ty<'t4> s.Tail.Tail.Tail fs.Tail.Tail.Tail,
-      convertFast ty<'t5> s.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail
-    static member inline Convert (_: ty<'t1*'t2*'t3*'t4*'t5*'t6>, s: string list, fs: char list) =
-      convertFast ty<'t1> s fs,
-      convertFast ty<'t2> s.Tail fs.Tail,
-      convertFast ty<'t3> s.Tail.Tail fs.Tail.Tail,
-      convertFast ty<'t4> s.Tail.Tail.Tail fs.Tail.Tail.Tail,
-      convertFast ty<'t5> s.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail,
-      convertFast ty<'t6> s.Tail.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail.Tail
-    static member inline Convert (_: ty<'t1*'t2*'t3*'t4*'t5*'t6*'t7>, s: string list, fs: char list) =
-      convertFast ty<'t1> s fs,
-      convertFast ty<'t2> s.Tail fs.Tail,
-      convertFast ty<'t3> s.Tail.Tail fs.Tail.Tail,
-      convertFast ty<'t4> s.Tail.Tail.Tail fs.Tail.Tail.Tail,
-      convertFast ty<'t5> s.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail,
-      convertFast ty<'t6> s.Tail.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail.Tail,
-      convertFast ty<'t7> s.Tail.Tail.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail.Tail.Tail
+    static member inline Convert (_: ScanfTypeMarker<'t1*'t2>, s: string list, fs: char list) =
+      convertFast typemarker<'t1> s fs,
+      convertFast typemarker<'t2> s.Tail fs.Tail
+    static member inline Convert (_: ScanfTypeMarker<'t1*'t2*'t3>, s: string list, fs: char list) =
+      convertFast typemarker<'t1> s fs,
+      convertFast typemarker<'t2> s.Tail fs.Tail,
+      convertFast typemarker<'t3> s.Tail.Tail fs.Tail.Tail
+    static member inline Convert (_: ScanfTypeMarker<'t1*'t2*'t3*'t4>, s: string list, fs: char list) =
+      convertFast typemarker<'t1> s fs,
+      convertFast typemarker<'t2> s.Tail fs.Tail,
+      convertFast typemarker<'t3> s.Tail.Tail fs.Tail.Tail,
+      convertFast typemarker<'t4> s.Tail.Tail.Tail fs.Tail.Tail.Tail
+    static member inline Convert (_: ScanfTypeMarker<'t1*'t2*'t3*'t4*'t5>, s: string list, fs: char list) =
+      convertFast typemarker<'t1> s fs,
+      convertFast typemarker<'t2> s.Tail fs.Tail,
+      convertFast typemarker<'t3> s.Tail.Tail fs.Tail.Tail,
+      convertFast typemarker<'t4> s.Tail.Tail.Tail fs.Tail.Tail.Tail,
+      convertFast typemarker<'t5> s.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail
+    static member inline Convert (_: ScanfTypeMarker<'t1*'t2*'t3*'t4*'t5*'t6>, s: string list, fs: char list) =
+      convertFast typemarker<'t1> s fs,
+      convertFast typemarker<'t2> s.Tail fs.Tail,
+      convertFast typemarker<'t3> s.Tail.Tail fs.Tail.Tail,
+      convertFast typemarker<'t4> s.Tail.Tail.Tail fs.Tail.Tail.Tail,
+      convertFast typemarker<'t5> s.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail,
+      convertFast typemarker<'t6> s.Tail.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail.Tail
+    static member inline Convert (_: ScanfTypeMarker<'t1*'t2*'t3*'t4*'t5*'t6*'t7>, s: string list, fs: char list) =
+      convertFast typemarker<'t1> s fs,
+      convertFast typemarker<'t2> s.Tail fs.Tail,
+      convertFast typemarker<'t3> s.Tail.Tail fs.Tail.Tail,
+      convertFast typemarker<'t4> s.Tail.Tail.Tail fs.Tail.Tail.Tail,
+      convertFast typemarker<'t5> s.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail,
+      convertFast typemarker<'t6> s.Tail.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail.Tail,
+      convertFast typemarker<'t7> s.Tail.Tail.Tail.Tail.Tail.Tail fs.Tail.Tail.Tail.Tail.Tail.Tail
 
   // Creates a list of formatter characters from a format string,
   // for example "(%s,%d)" -> ['s', 'd']
@@ -228,7 +229,7 @@ module Internal =
       match c with
         | 'b' -> (pstring "true" <|> pstring "false") <++> cont
         | 'd' | 'i' -> many1Satisfy isDigit <++> cont
-        | 's' ->
+        | 's' | 'A' ->
           manyCharsTill anyChar (followedBy cont) .>>.? cont |>> List.Cons
         | 'u' -> strOf puint64 <++> cont
         | 'x' | 'X' -> manySatisfy isHex <++> cont
@@ -276,6 +277,7 @@ type PrintfFormat<'a,'b,'c,'d,'e> with
       | 'o' -> "octal"
       | 'f' | 'e' | 'E' | 'g' | 'G' -> "double"
       | 'M' -> "decimal"
+      | 'A' -> "any type"
       | x -> failwithf "Unsupported formatter '%%%c'" x
     in
     fs |> List.map print
@@ -368,7 +370,7 @@ module Optimized =
   let inline ksscanf (pf: PrintfFormat<_,_,_,_,^t>) (cont: ^t -> 'u) s : 'u =
     let matches, _, formatters = getMatchesAndFormat pf s
     let strings = matches |> Seq.toList
-    convertFast ty< ^t > strings formatters |> cont
+    convertFast typemarker< ^t > strings formatters |> cont
   let inline tryKsscanf pf cont s =
     try
       ksscanf pf cont s |> Ok
