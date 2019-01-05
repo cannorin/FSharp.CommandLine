@@ -17,8 +17,6 @@ Example
 ```fsharp
 open System
 open FSharp.CommandLine
-open FSharp.CommandLine.Options
-open FSharp.CommandLine.Commands
 
 let fileOption =
   commandOption {

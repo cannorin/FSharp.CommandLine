@@ -1,3 +1,5 @@
+* 3.0.* - Breaking API changes. Use FAKE again. Refactor Scanf.
+* 2.2.* - Fix broken NuGet dependency 
 * 2.1.* - Separated scanf module
 * 2.0.* - Breaking API changes: no more internal side effects
 * 1.2.* - Get rid of FAKE

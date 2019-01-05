@@ -3,27 +3,18 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <BaseVersion>2.2.*.*</BaseVersion>
     <Description>A framework for building command line application in F#. Supports command line option parsing, type-safe scanf, monadic command construction, automatic help &amp; shell completion generation, and so on.</Description>
     <Authors>cannorin</Authors>
     <Product />
-    <Copyright>(c) cannorin 2017-2018</Copyright>
+    <Copyright>(c) cannorin 2017-2019</Copyright>
     <PackageProjectUrl>https://github.com/cannorin/FSharp.CommandLine</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/cannorin/FSharp.CommandLine/blob/master/LICENSE.txt</PackageLicenseUrl>
     <PackageTags>fsharp commandline parsing framework</PackageTags>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>..\bin\Debug\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>..\bin\Release\</OutputPath>
-  </PropertyGroup>
-
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="prelude.fs" />
+    <Compile Include="../common/Version.fs" />
+    <Compile Include="../common/prelude.fs" />
     <Compile Include="abstraction.fs" />
     <Compile Include="extensions.fs" />
     <Compile Include="basictypes.fs" />
@@ -35,10 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="VS2017MSBuildAutoVersioning" Version="1.0.11">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="FSharp.Scanf" Version="2.1.6831.31891" />
+    <PackageReference Update="FSharp.Core" Version="4.2.3" />
+    <ProjectReference Include="..\FSharp.Scanf\FSharp.Scanf.fsproj" />
   </ItemGroup>
   
 </Project>

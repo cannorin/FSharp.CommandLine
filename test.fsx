@@ -1,9 +1,9 @@
-#r "bin/Debug/net46/FSharp.CommandLine.dll"
-#load "src/prelude.fs"
+#r "src/FSharp.CommandLine/bin/Debug/net46/FSharp.Scanf.dll"
+#r "src/FSharp.CommandLine/bin/Debug/net46/FSharp.CommandLine.dll"
+
+#load "src/common/prelude.fs"
 open System
 open FSharp.CommandLine
-open FSharp.CommandLine.Options
-open FSharp.CommandLine.Commands
 
 let fileOption =
   commandOption {
@@ -87,7 +87,7 @@ let mainCommand =
 
 while true do
   printf "test> "
-  let inputs = Console.ReadLine() |> String.splitBy ' ' |> String.removeEmptyEntries
+  let inputs = Console.ReadLine() |> String.split ' ' |> String.removeEmptyEntries
   let mc = mainCommand
   try
     mc |> Command.runAsEntryPointDebug inputs ||> (fun code args -> printfn "(exited with %i, unused args:%A)\n" code args)
