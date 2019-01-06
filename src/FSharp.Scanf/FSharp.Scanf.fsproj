@@ -8,7 +8,7 @@
     <Product />
     <Copyright>(c) cannorin 2017-2019</Copyright>
     <PackageProjectUrl>https://github.com/cannorin/FSharp.CommandLine/tree/master/src/FSharp.Scanf</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/cannorin/FSharp.CommandLine/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>fsharp commandline console scanf</PackageTags>
   </PropertyGroup>
 
