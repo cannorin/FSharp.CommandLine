@@ -311,14 +311,15 @@ let ksscanf (pf: PrintfFormat<_,_,_,_,'t>) (cont: 't -> 'u) s : 'u =
       else
         failwith "Match failed"
     else
-      let targetTypes =
-        if matches.Length = 1 then Array.singleton typeof<'t>
-        else FSharpType.GetTupleElements(typeof<'t>)
-      let values =
-        (formatters, targetTypes, matches)
-        |||> Seq.map3 convertUnsafe
-        |> Seq.toArray
-      FSharpValue.MakeTuple(values, typeof<'t>) :?> 't
+      if matches.Length = 1 then
+        convertUnsafe formatters.[0] typeof<'t> matches.[0] :?> 't
+      else
+        let targetTypes = FSharpType.GetTupleElements(typeof<'t>)
+        let values =
+          (formatters, targetTypes, matches)
+          |||> Seq.map3 convertUnsafe
+          |> Seq.toArray
+        FSharpValue.MakeTuple(values, typeof<'t>) :?> 't
   cont value
 
 let inline tryKsscanf pf cont s =
