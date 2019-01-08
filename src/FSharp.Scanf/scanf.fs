@@ -21,8 +21,8 @@ THE SOFTWARE.
 
 // original: http://www.fssnip.net/4I/title/sscanf-parsing-with-format-strings
 
-/// Scanf functions. If the result type is 7-tuple or less,
-/// consider using `FSharp.Scanf.Optimized` module instead.
+/// Scanf functions.
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 module FSharp.Scanf
 
 open System
@@ -35,11 +35,11 @@ let inline internal check f x = if f x then x else failwithf "format failure \"%
 
 let inline internal parseDecimal x = Decimal.Parse(x, System.Globalization.CultureInfo.InvariantCulture)
 
-// type wrapper
-[<Struct>]
-type ScanfTypeMarker<'t> = | ScanfTypeMarker
-
 module Internal =
+  // type wrapper
+  [<Struct>]
+  type ScanfTypeMarker<'t> = | ScanfTypeMarker
+
   [<Literal>]
   let parserChars = "bdisuxXoeEfFgGMcA"
   
@@ -302,6 +302,9 @@ type PrintfFormat<'a,'b,'c,'d,'e> with
 
   member this.PrettyPrint names = this.PrettyTokenize names |> String.concat ""
 
+type ScanfTypeMarker<'t> = Internal.ScanfTypeMarker<'t>
+
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let ksscanf (pf: PrintfFormat<_,_,_,_,'t>) (cont: 't -> 'u) s : 'u =
   let matches, formatStr, formatters = getMatchesAndFormat pf s
   let value =
@@ -322,39 +325,50 @@ let ksscanf (pf: PrintfFormat<_,_,_,_,'t>) (cont: 't -> 'u) s : 'u =
         FSharpValue.MakeTuple(values, typeof<'t>) :?> 't
   cont value
 
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let inline tryKsscanf pf cont s =
   try
     ksscanf pf cont s |> Ok
   with
     | ex -> Error ex
     
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let inline sscanf pf s  =
   ksscanf pf id s
 
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let inline trySscanf pf s =
   tryKsscanf pf id s
 
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let inline scanfn pf =
   Console.ReadLine() |> sscanf pf
 
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let inline tryScanfn pf =
   Console.ReadLine() |> trySscanf pf
   
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let inline kscanfn pf cont =
   ksscanf pf cont <| Console.ReadLine()
 
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let inline tryKscanfn pf cont =
   tryKsscanf pf cont <| Console.ReadLine()
 
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let inline fscanfn pf (tr: TextReader) =
   tr.ReadLine() |> sscanf pf
 
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let inline tryFscanfn pf (tr: TextReader) =
   tr.ReadLine() |> trySscanf pf
 
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let inline kfscanfn pf cont (tr: TextReader) =
   ksscanf pf cont <| tr.ReadLine()
 
+/// If the result type is 7-tuple or less, consider using `FSharp.Scanf.Optimized` module instead.
 let inline tryKfscanfn pf cont (tr: TextReader) =
   tryKsscanf pf cont <| tr.ReadLine()
 
@@ -362,38 +376,61 @@ let inline tryKfscanfn pf cont (tr: TextReader) =
 let (|Sscanf|_|) (format:PrintfFormat<_,_,_,_,'t>) input =
   trySscanf format input |> function | Ok x -> Some x | Error _ -> None
 
-/// Scanf functions, no reflection/boxing.
-/// 
-/// About 6x-7x faster than unoptimized ones.
+/// Scanf functions, no reflection/boxing. About 6x-7x faster than unoptimized ones.
 /// 
 /// Can only be used with up to 7 captures (i.e. the result type must be up to 7-tuples).
+/// 
+/// If you implement a static member with signature `Convert: ScanfTypeMarker<YourType> * string list * char list -> YourType`,
+/// you can directly parse the string into that type by using `%A`.
+/// 
+/// ```
+/// type A = A of string with
+///   static member Convert (_: ScanfTypeMarker<A>, ss: string list, _) = ss.[0]
+/// 
+/// let a: A = sscanf "%A" "foo"
+/// // val a : A = A "foo"
+/// ```
 module Optimized =
+  type ScanfTypeMarker<'t> = Internal.ScanfTypeMarker<'t>
+
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline ksscanf (pf: PrintfFormat<_,_,_,_,^t>) (cont: ^t -> 'u) s : 'u =
     let matches, _, formatters = getMatchesAndFormat pf s
     let strings = matches |> Seq.toList
     convertFast typemarker< ^t > strings formatters |> cont
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline tryKsscanf pf cont s =
     try
       ksscanf pf cont s |> Ok
     with
       | ex -> Error ex
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline sscanf pf s  =
     ksscanf pf id s
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline trySscanf pf s =
     tryKsscanf pf id s
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline scanfn pf =
     Console.ReadLine() |> sscanf pf
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline tryScanfn pf =
     Console.ReadLine() |> trySscanf pf
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline kscanfn pf cont =
     ksscanf pf cont <| Console.ReadLine()
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline tryKscanfn pf cont =
     tryKsscanf pf cont <| Console.ReadLine()
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline fscanfn pf (tr: TextReader) =
     tr.ReadLine() |> sscanf pf
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline tryFscanfn pf (tr: TextReader) =
     tr.ReadLine() |> trySscanf pf
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline kfscanfn pf cont (tr: TextReader) =
     ksscanf pf cont <| tr.ReadLine()
+  /// If the result type is 8-tuple or more, it fails to typecheck. Use `FSharp.Scanf` module instead or try reducing the captures by applying `scanf` to the result string.
   let inline tryKfscanfn pf cont (tr: TextReader) =
     tryKsscanf pf cont <| tr.ReadLine()

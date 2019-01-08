@@ -6,4 +6,5 @@ exception CommandExecutionFailed of msg: string with
   override this.Message = this.msg
 
 exception RequestExit of int
-
+exception RequestShowHelp of msg: string with
+  override this.Message = this.msg

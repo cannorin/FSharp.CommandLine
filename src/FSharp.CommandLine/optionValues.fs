@@ -41,7 +41,7 @@ module OptionValues =
       member this.asConst value =
         { format = this.format; handler = (fun _ -> value); paramNames = this.paramNames }
 
-  let format (fmt: PrintfFormat<_,_,_,_,'t>) : ValueFormat<_,_,_,_,'t,'t> =
+  let inline format (fmt: PrintfFormat<_,_,_,_,'t>) : ValueFormat<_,_,_,_,'t,'t> =
     { format = fmt; handler = id; paramNames = None }
 
   type ValueRegex<'a> = {
@@ -70,7 +70,7 @@ module OptionValues =
       member this.asConst value =
         { regex = this.regex; handler = fun _ -> value }
 
-  let regex r = 
+  let inline regex r = 
     { regex = Regex(r); handler = id }
 
   type ValueTypedRegex<'a, '_Regex, '_Match > = {
@@ -94,8 +94,8 @@ module OptionValues =
       member inline this.asConst value =
         { typedRegex = this.typedRegex; handler = fun _ -> value }
 
-  let typedRegex< 'Regex when 'Regex: (new: unit -> 'Regex) > =
-    { typedRegex = new 'Regex(); handler = id }
+  let inline typedRegex< ^Regex, ^Match when ^Regex: (new: unit -> ^Regex) and ^Regex: (member TypedMatch: string -> ^Match) > : ValueTypedRegex< ^Match, ^Regex, ^Match > =
+    { typedRegex = new ^Regex(); handler = id }
 
   let inline asConst value (optionValue: ^X) =
     (^X: (member asConst: _ -> _) optionValue,value)

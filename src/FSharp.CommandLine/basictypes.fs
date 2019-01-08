@@ -8,14 +8,24 @@ module BasicTypes =
   type Args = string list
 
   type HelpElement =
+    /// prints `usage: $(command name) $(args)`.
     | HelpUsage
+    /// prints `usage: $(command name) $(args)` of which `args` can be customized.
     | HelpUsageCustomArgs of args: string list
+    /// prints a string.
     | HelpRawString of text: string
+    /// prints the infomation of all the subcommands.
     | HelpAllSubcommands
+    /// prints the infomation of the specified subcommands.
     | HelpSpecificSubcommands of names: string list
+    /// prints the infomation of all the command options.
     | HelpAllOptions
+    /// prints the infomation of the specified command options.
     | HelpSpecificOptions of namesWithoutHyphen: string list
+    /// prints elements as a section. the content will be indented.
+    /// nested sections make the indentation deeper.
     | HelpSection of sectionName: string * sectionBody: seq<HelpElement>
+    /// prints an empty line.
     | HelpEmptyLine
 
   module internal Seq =
@@ -25,39 +35,57 @@ module BasicTypes =
   type HelpBuilder =
     member inline __.For (_, _) = failwith "Not supported"
     member inline __.Yield _ : HelpElement seq = Seq.empty
+    /// prints `usage: $(command name) $(args)`.
     [<CustomOperation("defaultUsage")>]
     member inline __.Usage xs = xs |> Seq.snoc HelpUsage
+    /// prints `usage: $(command name) $(args)` of which `args` can be customized.
     [<CustomOperation("customUsage")>]
     member inline __.UsageWithCustomArgs (xs, argNames) = xs |> Seq.snoc (HelpUsageCustomArgs argNames)
+    /// prints a string.
     [<CustomOperation("text")>]
     member inline __.RawText (xs, str) = xs |> Seq.snoc (HelpRawString str)
+    /// prints the infomation of all the subcommands.
     [<CustomOperation("allSubcommands")>]
     member inline __.Subcommands xs = xs |> Seq.snoc HelpAllSubcommands
+    /// prints the infomation of the specified subcommands.
     [<CustomOperation("specificSubcommands")>]
     member inline __.SpecificSubcommands (xs, cmds) = xs |> Seq.snoc (HelpSpecificSubcommands cmds)
+    /// prints the infomation of all the command options.
     [<CustomOperation("allOptions")>]
     member inline __.Options xs = xs |> Seq.snoc HelpAllOptions
+    /// prints the infomation of the specified command options.
     [<CustomOperation("specificOptions")>]
     member inline __.SpecificOptions (xs, opts) = xs |> Seq.snoc (HelpSpecificOptions opts)
+    /// prints elements as a section. the content will be indented.
+    /// nested sections make the indentation deeper.
     [<CustomOperation("section")>]
     member inline __.Section (xs, sectionName, section) = xs |> Seq.snoc (HelpSection(sectionName, section))
+    /// prints elements as a section when the condition holds. the content will be indented.
+    /// nested sections make the indentation deeper.
     [<CustomOperation("conditionalSection")>]
     member inline __.ConditionalSection (xs, sectionName, cond, section) =
       if cond() then
         xs |> Seq.snoc (HelpSection(sectionName, section))
       else 
         xs
+    /// prints an empty line.
     [<CustomOperation("emptyLine")>]
     member inline __.EmptyLine xs = xs |> Seq.snoc HelpEmptyLine
 
   let helpText = HelpBuilder ()
 
   type CommandSuggestion =
+    /// suggests a set of string.
     | Values of string list
+    /// suggests a set of string with description.
     | ValuesWithDescription of (string * string) list
+    /// suggests files optionally with pattern.
     | Files of pattern: string option
+    /// suggests directories.
     | Directories of pattern: string option
+    /// suggests a command option.
     | OptionSuggestion of (string list) * string
+    /// prints a message.
     | Message of string
 
   type CommandOptionSummary = { 
@@ -113,9 +141,9 @@ module BasicTypes =
   type CommandInfo = {
       summary: CommandSummary
       options: CommandOptionSummary list
-      subcommands: ICommand<int> list
+      subcommands: Command<int> list
     }
-  and ICommand<'a> = IStateConfig<CommandInfo, Args, 'a>
+  and Command<'a> = StateConfig<CommandInfo, Args, 'a>
 
   type CommandInfo with
     static member empty =
@@ -128,5 +156,5 @@ module BasicTypes =
   [<Extension>]
   type ICommandExt() =
     [<Extension>]
-    static member inline Summary(x: #ICommand<_>) =
-      (x.Config CommandInfo.empty).summary
+    static member inline Summary(x: Command<_>) =
+      (x.config CommandInfo.empty).summary

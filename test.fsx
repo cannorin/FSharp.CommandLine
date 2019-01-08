@@ -52,6 +52,8 @@ let echoCommand =
     opt color in colorOption |> CommandOption.zeroOrExactlyOne
     do! Command.failOnUnknownOptions()
     let! args = Command.args
+    if args |> List.contains "help" then
+      do! Command.failShowingHelp "showing help."
     do 
       let s = args |> String.concat " " 
       match color with
@@ -71,6 +73,12 @@ let plus1 =
     return number
   }
 
+let x =
+  command {
+    do! Command.failOnUnknownOptions()
+    do! Command.failOnUnknownOptions()
+  }
+
 let mainCommand =
   command {
     name "main"
@@ -81,6 +89,9 @@ let mainCommand =
     import num in plus1
     subcommands [echoCommand]
     do! Command.failOnUnknownOptions()
+    let! args = Command.args
+    if args |> List.contains "help" then
+      do! Command.failShowingHelp "showing help."
     do printfn "%A, %A" files verbosity
     return 0
   }
@@ -93,6 +104,10 @@ while true do
     mc |> Command.runAsEntryPointDebug inputs ||> (fun code args -> printfn "(exited with %i, unused args:%A)\n" code args)
   with
     | RequestExit code -> printfn "(exited with %i)\n" code
+    | RequestShowHelp msg ->
+      cprintfn ConsoleColor.Red "error: %s\n" msg
+      for line in Help.generate (inputs |> List.ofArray) mc do
+        printfn "%s" line
     | OptionParseFailed (_, msg)
     | CommandExecutionFailed msg -> cprintfn ConsoleColor.Red "error: %s\n" msg
     | e -> reraise' e

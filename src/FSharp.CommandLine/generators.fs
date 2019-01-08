@@ -2,8 +2,8 @@ namespace FSharp.CommandLine
 
 [<AutoOpen>]
 module Generators =
-  let rec private dig argv (cmd: ICommand<int>) =
-    let config = (cmd.Config CommandInfo.empty)
+  let rec private dig argv (cmd: Command<int>) =
+    let config = (cmd.config CommandInfo.empty)
     match argv with
       | [] -> (cmd, [])
       | args ->
@@ -15,8 +15,8 @@ module Generators =
               | Some sc -> dig (List.tail args) sc
               | None -> (cmd, args)
       
-  let private getCommandInfo (cmd: #ICommand<_>) =
-    let config = (cmd.Config CommandInfo.empty)
+  let private getCommandInfo (cmd: Command<_>) =
+    let config = (cmd.config CommandInfo.empty)
     (config.summary, config.subcommands, config.options)
 
   module Help =
@@ -42,7 +42,8 @@ module Generators =
             | (false, true) -> "<command>"
             | (false, false) -> "[options] <command>"
 
-    let interpret (generator: #ICommand<_> -> #seq<HelpElement>) (cmd: #ICommand<_>) =
+    /// given a help generator and a command, generates the help text.
+    let interpret (generator: Command<_> -> #seq<HelpElement>) (cmd: Command<_>) =
       let (smry, scs, opts) = getCommandInfo cmd
       let dn = smry.displayName ?| smry.name
       let rec print elems =
@@ -61,7 +62,7 @@ module Generators =
                         yield! prettySprint (sprintf "%s %s" scsmry.name (genParamNames scsmry.paramNames scsubs scopts)) scsmry.description
                   }
                 | HelpSpecificSubcommands names ->
-                  let scs' = scs |> List.filter (fun sc -> names |> List.contains ((sc.Config CommandInfo.empty).summary.name))
+                  let scs' = scs |> List.filter (fun sc -> names |> List.contains ((sc.config CommandInfo.empty).summary.name))
                   seq {
                     if scs' |> List.isEmpty |> not then
                       for sc in scs' do
@@ -93,7 +94,8 @@ module Generators =
         }
       generator cmd |> print
 
-    let defaultGenerator (cmd: #ICommand<_>) =
+    /// a default help generator for the command.
+    let defaultGenerator (cmd: Command<_>) =
       let (smry, scs, opts) = getCommandInfo cmd
       helpText {
         defaultUsage
@@ -113,6 +115,7 @@ module Generators =
         )
       }
     
+    /// generates a help text from the arguments and the command.
     let generate args cmd =
       let (cmd, _) = dig args cmd
       let (smry, _, _) = getCommandInfo cmd
@@ -124,10 +127,12 @@ module Generators =
     abstract print: CommandSuggestion list -> string
 
   module Suggestions =
+    /// prints the suggestions to the backend.
     let print (backend: #ISuggestionBackend) css =
       backend.print css
 
-    let generate args (cmd: ICommand<int>) =
+    /// generates suggestions from the arguments and the command.
+    let generate args (cmd: Command<int>) =
       List.ofSeq <|
         try
           let ((cmdsum, cmdsubs, cmdopts), remArgs) =
@@ -162,6 +167,7 @@ module Generators =
   module SuggestionBackends =
     open FSharp.Collections
 
+    /// a suggestion backend for zsh.
     let zsh =
       let quote str = sprintf "'%s'" str
       let escape str =
@@ -207,6 +213,7 @@ module Generators =
         ("zsh", zsh)
       ]
 
+    /// given a backend name, gets the backend object.
     let findByName name =
       impls |> Map.tryFind name
             |> Option.defaultWith (fun () -> sprintf "suggestion backend not exist: %s" name |> CommandExecutionFailed |> raise)

@@ -3,6 +3,7 @@ namespace FSharp.CommandLine
 [<AutoOpen>]
 module rec Options =
   open FSharp.Scanf.Optimized
+  open Microsoft.FSharp.Quotations
 
   open CommandOption
 
@@ -30,6 +31,8 @@ module rec Options =
     abstract member Config: CommandInfo -> CommandInfo
     abstract member Summary: CommandOptionSummary
 
+  /// represents a command option parser that tries to parse the arguments
+  /// and returns an optional result value.
   [<Struct>]
   type CommandOption<'a> = {
       baseSummary: CommandOptionSummary
@@ -43,20 +46,22 @@ module rec Options =
           this.baseSummary with
             isMatch =
               fun argv ->
-                match (parse self argv) with
+                match (parseImpl self argv) with
                   | (Some _, rem) -> Some rem
                   | (None, _) -> None
         }
-      member this.Parse argv = parse this argv
+      member this.Parse argv = parseImpl this argv
       interface ICommandOption<'a option> with
         member this.Summary = this.Summary
-        member this.Parse argv = parse this argv
+        member this.Parse argv = parseImpl this argv
         member this.Config cfg =
           {
             cfg with
               options = this.Summary :: cfg.options
           }
 
+  /// represents a command option of which behavior and/or functionality are augmented.
+  /// (e.g. can parse multiple occurrence of the option at once)
   [<Struct>]
   type AugmentedCommandOption<'a, 'b> = {
       orig: ICommandOption<'a>
@@ -134,10 +139,17 @@ module rec Options =
   type CommandOptionBuilder<'a>(dc: unit -> CommandOption<'a>) =
     member __.For (_, _) = failwith "Not supported"
     member __.Yield _ = dc ()
+    /// required.
+    /// specifies the option's names. hyphens should not be included,
+    /// as they will automatically be handled depending on
+    /// the length of the name and optionally the `style` command.
     [<CustomOperation("names")>]
     member __.Names (co, x) = { co with baseSummary = { co.baseSummary with names = x } }
     [<CustomOperation("description")>]
     member __.Description (co, x) = { co with baseSummary = { co.baseSummary with description = x } }
+    /// required for command option.
+    /// specifies the format of the argument. for example:
+    /// `takes (format("%s").map(fun str -> someFunc str))`
     [<CustomOperation("takes")>]
     member inline __.Takes (co: CommandOption<'a>, x) =
       let (f, ts) = construct x in
@@ -151,6 +163,28 @@ module rec Options =
                 paramNames = ts :: co.baseSummary.paramNames
             }
       }
+    /// `takesFormat fmt (fun .. -> ..)` is a shorthand for
+    /// `takes (format(fmt).map(fun .. -> ..))`.
+    [<CustomOperation("takesFormat")>]
+    member inline __.TakesFormat (co: CommandOption<_>, fmt: PrintfFormat<_,_,_,_,_>, [<ReflectedDefinition>]mapper: Expr<_ -> _>) =
+      let mf x = (FuncHelper.compileFunc mapper) x in
+      let pns = FuncHelper.getFirstArgumentName mapper in
+      let x = 
+        { format = fmt; handler = mf; paramNames = pns }
+      let (f, ts) = construct x in
+      { co with 
+          kind =
+            match co.kind with
+              | TakingValueWith (d, xs) -> TakingValueWith (d, List.append xs [f])
+              | _                       -> TakingValueWith (JustFail, [f]);
+          baseSummary =
+            { co.baseSummary with
+                paramNames = ts :: co.baseSummary.paramNames
+            }
+      }
+    /// optional.
+    /// makes the option's argument optional, and specifies the default value
+    /// that will be used when the argument is not provided.
     [<CustomOperation("defaultValue")>]
     member __.DefaultValue (co: CommandOption<'a>, value: 'a) =
       { co with
@@ -159,8 +193,13 @@ module rec Options =
               | TakingValueWith (_, xs) -> TakingValueWith (UseDefault value, xs)
               | x -> x
       }
+    /// optional.
+    /// specifies the command suggestions this option will generate.
     [<CustomOperation("suggests")>]
     member __.Suggests (co, f) = { co with baseSummary = { co.baseSummary with genSuggestions=f } }
+    /// optional.
+    /// specify how to treat options like ```-abcd```.
+    /// the default value is `MergedShort`.
     [<CustomOperation("style")>]
     member __.Style (co, st) = { co with style = st }
 
@@ -242,12 +281,14 @@ module rec Options =
     }
 
   module CommandOption =
+    /// gets the arguments which look like (will potentially be recognized by the parser as)
+    /// a command option.
     let getRemainingOptions argv =
       argv |> tokenize |> List.ofSeq
            |> List.choose (function RIgnoreAfter | RValue _ -> None | x -> Some x)
            |> List.map to_s
 
-    let parse (opt: CommandOption<'a>) argv =
+    let internal parseImpl (opt: CommandOption<'a>) argv =
       let inline isSingle s = String.length s = 1
       let inline matches x = opt.baseSummary.names |> List.contains x
       let shortNames = opt.baseSummary.names |> List.filter isSingle
@@ -334,6 +375,12 @@ module rec Options =
               | [] -> (None, [])
       find tokens |> Tuple.map2 id (List.map to_s)
 
+    /// given a command option and arguments, applies the parser to the arguments
+    /// and returns the parsed result and the remaining arguments.
+    let inline parse (opt: #ICommandOption<_>) argv = opt.Parse argv
+
+    /// given a command option and arguments, applies the parser to the arguments until it fails
+    /// and returns the results and the remaining arguments.
     let parseMany (opt: #ICommandOption<_>) argv =
       let rec p xs =
         seq  {
@@ -347,6 +394,9 @@ module rec Options =
       let x = p argv
       (x |> Seq.map fst |> List.ofSeq, x |> Seq.map snd |> Seq.tryLast ?| argv)
 
+    /// given a command option, augments its functionality by modifying
+    /// its behavior. both the original command option and the arguments which
+    /// will be passed at the execution time are available.
     let inline augment f c = { orig=c; augmenter=f }
     let inline map f c =
       let ac = augment (fun c args -> c.Parse args) c
@@ -355,9 +405,13 @@ module rec Options =
         augmenter=(fun o x -> ac.augmenter o x |> Tuple.map2 f id)
       }
 
+    /// given a command option, returns a new command option that parses
+    /// zero or more occurrence of that command option.
     let inline zeroOrMore co =
       co |> augment parseMany
 
+    /// given a command option, returns a new command option that fails
+    /// if there are more than one occurrence of that command option.
     let inline zeroOrExactlyOne co =
       co |> zeroOrMore 
          |> map (function 
@@ -369,9 +423,13 @@ module rec Options =
               OptionParseFailed (co.Summary, msg) |> raise
             )
 
-    let inline whenMissingUse v co =
-      co |> map (function Some x -> x | None -> v)
+    /// given a command option, returns a new command option that returns
+    /// the specified default value if there is no occurence.
+    let inline whenMissingUse defaultValue co =
+      co |> map (function Some x -> x | None -> defaultValue)
 
+  /// an active pattern to parse the arguments using the command option
+  /// and gets the result and the remaining arguments.
   let inline (|OptionParse|_|) opt argv =
     let (reso, argv') = parse opt argv
     reso |> Option.map (fun x -> (x, argv'))
