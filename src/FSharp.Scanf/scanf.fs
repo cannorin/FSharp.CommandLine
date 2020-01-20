@@ -221,7 +221,7 @@ module Internal =
   let rec internal buildParser = function
     | [] -> eof >>% []
     | FormatStringPart.Space :: rest ->
-      spaces >>. buildParser rest
+      spaces1 >>. buildParser rest
     | FormatStringPart.Literal lit :: rest ->
       skipString lit >>. buildParser rest
     | FormatStringPart.Placeholder c :: rest->
