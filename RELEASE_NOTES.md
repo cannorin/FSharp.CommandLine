@@ -1,3 +1,4 @@
+* 3.2.* - Fixed scanf parser.
 * 3.1.* - Improve comments. Some refactoring.
 * 3.0.* - Breaking API changes. Use FAKE again. Refactor Scanf.
 * 2.2.* - Fix broken NuGet dependency 
