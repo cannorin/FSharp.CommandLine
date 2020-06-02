@@ -185,3 +185,4 @@ docsrc/content/release-notes.md
 .fake
 .paket
 docsrc/tools/FSharp.Formatting.svclog
+.ionide

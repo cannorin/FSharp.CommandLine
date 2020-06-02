@@ -47,6 +47,9 @@ let release = loadReleaseNoteWithAutoIncrement "RELEASE_NOTES.md"
 
 release.AssemblyVersion |> Trace.tracefn "Auto version: %s"
 
+let disableLogging (c: MSBuild.CliArguments) =
+  { c with ConsoleLogParameters = []; DistributedLoggers = None; DisableInternalBinLog = true }
+
 Target.create "WriteVersion" (fun _ ->
   AssemblyInfoFile.createFSharp "./src/common/Version.fs" [
     AssemblyInfo.Version release.AssemblyVersion
@@ -65,6 +68,7 @@ Target.create "Build" (fun _ ->
   |> Seq.iter (DotNet.build (fun opt ->
     { opt with
         Configuration = DotNet.BuildConfiguration.Release
+        MSBuildParams = disableLogging opt.MSBuildParams
     }))
 )
 
@@ -75,7 +79,7 @@ Target.create "Pack" (fun _ ->
         Configuration = DotNet.BuildConfiguration.Release
         OutputPath = Some "../../bin/packages/"
         MSBuildParams = {
-          opt.MSBuildParams with
+          disableLogging opt.MSBuildParams with
             Properties = [
               "PackageVersion", release.NugetVersion
             ] @ opt.MSBuildParams.Properties

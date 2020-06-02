@@ -46,8 +46,8 @@ module Internal =
   let inline internal formatIntegerStr str fmt =
     match fmt with
       | 'i' | 'd' | 'u' -> str
-      | 'x' -> str |> check (String.forall Char.IsLower) |> ((+) "0x")
-      | 'X' -> str |> check (String.forall Char.IsUpper) |> ((+) "0x")
+      | 'x' -> str |> check (String.forall (fun c -> Char.IsLower c || Char.IsDigit c)) |> ((+) "0x")
+      | 'X' -> str |> check (String.forall (fun c -> Char.IsUpper c || Char.IsDigit c)) |> ((+) "0x")
       | 'o' -> "0o" + str
       | _ -> str
 
