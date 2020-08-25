@@ -77,7 +77,7 @@ Target.create "Pack" (fun _ ->
   |> Seq.iter (DotNet.pack (fun opt ->
     { opt with
         Configuration = DotNet.BuildConfiguration.Release
-        OutputPath = Some "../../bin/packages/"
+        OutputPath = Some "bin/packages/"
         MSBuildParams = {
           disableLogging opt.MSBuildParams with
             Properties = [
