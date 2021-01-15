@@ -24,13 +24,21 @@ module Generators =
       let indent = "                                 "
       let indentLen = String.length indent
       let aLen = String.length a
-      if aLen > indentLen then
+      let bLines = String.replace "\r" "" b |> String.split "\n" |> List.ofArray
+      if List.isEmpty bLines then
         seq {
           yield sprintf "%s" a
-          yield sprintf "%s %s" indent b
+        }
+      elif aLen > indentLen then
+        seq {
+          yield sprintf "%s" a
+          yield! (bLines |> List.map (sprintf "%s %s" indent))
         }
       else
-        seq { yield sprintf "%s %s" a (String.replicate (indentLen - aLen) " " |> sprintf "%s%s" <| b) }
+        seq {
+          yield sprintf "%s %s" a (String.replicate (indentLen - aLen) " " |> sprintf "%s%s" <| bLines.Head)
+          yield! (bLines.Tail |> List.map (sprintf "%s %s" indent))
+        }
 
     let private genParamNames pns subs options = 
       match pns with
