@@ -1,3 +1,4 @@
+* 3.4.* - Indent multiline command descriptions
 * 3.3.* - Fixed scanf parser.
 * 3.2.* - Fixed scanf parser.
 * 3.1.* - Improve comments. Some refactoring.
