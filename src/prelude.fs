@@ -29,13 +29,12 @@ module internal Prelude
 [<AutoOpen>]
 module ToplevelOperators =
   open System
-  let inline to_s x = x.ToString()
 
   let inline (?|) opt df = defaultArg opt df
 
   let inline (!!) (x: Lazy<'a>) = x.Value
 
-  let inline undefined (x: 'a) : 'b = NotImplementedException(to_s x) |> raise
+  let inline undefined (x: 'a) : 'b = NotImplementedException(string x) |> raise
 
   let inline reraise' ex = System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex).Throw(); failwith "impossible"
 
@@ -88,7 +87,7 @@ module Flag =
       xs |> Seq.fold (|||) (Unchecked.defaultof< ^flag >)
   let inline contains (x: ^flag) (flags: ^flag) : bool
     when ^flag: enum<int> =
-      (x &&& flags) = x 
+      (x &&& flags) = x
 
 module Number =
   open System.Globalization
@@ -123,7 +122,7 @@ module Patterns =
     match x with
       | Some v -> v
       | None -> dv
-  
+
   [<AutoOpen>]
   module Kvp =
     open System.Collections.Generic
@@ -151,16 +150,16 @@ module String =
 
   let inline contains (s: ^a) (str: ^String) : bool = (^String: (member IndexOf: ^a -> int) str, s) <> -1
 
-  let inline findIndex (q: ^T) (str: ^String) = 
+  let inline findIndex (q: ^T) (str: ^String) =
     (^String: (member IndexOf: ^T -> int) (str, q))
 
-  let inline findIndexAfter (q: ^T) i (str: ^String) = 
+  let inline findIndexAfter (q: ^T) i (str: ^String) =
     (^String: (member IndexOf: ^T -> int -> int) (str, q, i))
 
-  let inline findLastIndex (q: ^T) (str: ^String) = 
+  let inline findLastIndex (q: ^T) (str: ^String) =
     (^String: (member LastIndexOf: ^T -> int) (str, q))
 
-  let inline findLastIndexAfter (q: ^T) i (str: ^String) = 
+  let inline findLastIndexAfter (q: ^T) i (str: ^String) =
     (^String: (member LastIndexOf: ^T -> int -> int) (str, q, i))
 
   let inline insertAt s i (str: string) = str.Insert(i, s)
@@ -173,7 +172,7 @@ module String =
 
   let inline substring startIndex endIndex (str: string) = str.Substring(startIndex, endIndex)
 
-  let inline normalize (nfo: NormalizationForm option) (str: string) = 
+  let inline normalize (nfo: NormalizationForm option) (str: string) =
     match nfo with Some nf -> str.Normalize nf | None -> str.Normalize()
 
   let inline toLower (ci: CultureInfo) (str: string) = str.ToLower ci
@@ -187,7 +186,7 @@ module String =
   let inline padLeft i (str: string) = str.PadLeft i
 
   let inline padLeftBy i c (str: string) = str.PadLeft(i, c)
-  
+
   let inline padRight i (str: string) = str.PadRight i
 
   let inline padRightBy i c (str: string) = str.PadRight(i, c)
@@ -199,15 +198,15 @@ module String =
   let inline trimEnd (str: string) = str.TrimEnd()
 
   let inline trimBy (trimChar: char) (str: string) = str.Trim(trimChar)
-  
+
   let inline trimBySeq (trimChars: char seq) (str: string) = str.Trim(trimChars |> Seq.toArray)
 
   let inline trimStartBy (trimChar: char) (str: string) = str.TrimStart(trimChar)
-  
+
   let inline trimStartBySeq (trimChars: char seq) (str: string) = str.TrimStart(trimChars |> Seq.toArray)
 
   let inline trimEndBy (trimChar: char) (str: string) = str.TrimEnd(trimChar)
-  
+
   let inline trimEndBySeq (trimChars: char seq) (str: string) = str.TrimEnd(trimChars |> Seq.toArray)
 
   let inline replace (before: ^T) (after: ^T) (s: ^String) =
@@ -227,7 +226,7 @@ module String =
 
   let inline nth i (str: string) = str.[i]
 
-  let inline rev (str: string) = 
+  let inline rev (str: string) =
     new String(str.ToCharArray() |> Array.rev)
 
   let inline private whileBase pred act str =
@@ -275,7 +274,7 @@ module StringExtensions =
 open System.Collections.Generic
 
 type array2d<'t> = 't[,]
-type array3d<'t> = 't[,,]    
+type array3d<'t> = 't[,,]
 
 module List =
   let inline splitWith predicate xs =
@@ -309,10 +308,10 @@ module Seq =
     xs |> Seq.groupBy (fun x -> if predicate x then incr i; 0 else !i)
        |> Seq.filter (fst >> ((<>) 0))
        |> Seq.map snd
-  
+
   let inline split separator xs = splitWith ((=) separator) xs
 
-  let inline skipSafe length xs = 
+  let inline skipSafe length xs =
     xs |> Seq.indexed
        |> Seq.skipWhile (fst >> ((>) length))
        |> Seq.map snd
@@ -322,7 +321,7 @@ module Seq =
     if xs' |> Seq.exists (fst >> ((=) (length - 1))) then
       xs' |> Seq.take length |> Seq.map snd |> Some
     else None
-  
+
   let inline foldi folder state xs =
     Seq.fold (fun (i, state) x -> (i + 1, folder i state x)) (0, state) xs |> snd
 
@@ -365,12 +364,12 @@ module Map =
   /// will be called: the first parameter is the key, the second is the value
   /// found in the formar map `m1`, and the third is the one found in `m2`.
   let inline merge merger m1 m2 =
-    Map.fold (fun m k v1 -> 
+    Map.fold (fun m k v1 ->
       match m |> Map.tryFind k with
         | Some v2 -> Map.add k (merger k v1 v2) m
         | None -> Map.add k v1 m
       ) m1 m2
-  
+
   /// Merges multiple maps. If there is a duplicate key, the `merger` function
   /// will be called: the first parameter is the key, the second is the value
   /// already found in the earlier maps, and the third is the value newly found.
@@ -420,7 +419,7 @@ module Lazy =
   let inline run (x: Lazy<_>) = x.Value
 
   let inline force (x: Lazy<_>) = x.Force()
-  
+
   let inline bind (f: 'a -> Lazy<'b>) (x: Lazy<'a>) : Lazy<'b> =
     Lazy<_>.Create (fun () -> x |> force |> f |> force)
 
@@ -451,7 +450,7 @@ module Result =
     match res with
       | Ok x -> Some x
       | Error _ -> None
-  
+
   let inline toChoice res =
     match res with
       | Ok x -> Choice1Of2 x
@@ -512,10 +511,10 @@ module ComputationExpressions =
     member inline this.Undelay f = f()
     member inline this.TryWith (f, h) = try f() with exn -> h exn
     member inline this.TryFinally (f, h) = try f() finally h()
-    
+
 
     // boilerplate for any monad to add for/while
-    
+
     member inline this.Zero () = this.Return ()
     member inline this.Using (disp: #System.IDisposable, m) =
       this.TryFinally(
@@ -542,7 +541,7 @@ module ComputationExpressions =
     member inline this.Bind(m, f) = Option.bind f m
     member inline this.Return x = Some x
     member inline this.ReturnFrom x = x
-    
+
     member inline this.Delay f = f
     member inline this.Undelay f = f()
     member inline this.TryWith (f, h) = try f() with exn -> h exn
@@ -568,17 +567,17 @@ module ComputationExpressions =
             en.MoveNext,
             this.Delay(fun () -> exec en.Current))
       )
-  
+
   type ResultBuilder() =
     member inline this.Bind(m, f) = Result.bind f m
     member inline this.Return x = Ok x
     member inline this.ReturnFrom x = x
-    
+
     member inline this.Delay f = f
     member inline this.Undelay f = f()
     member inline this.TryWith (f, h) = try f() with exn -> h exn
     member inline this.TryFinally (f, h) = try f() finally h()
-    
+
     member inline this.Zero () = this.Return ()
     member inline this.Using (disp: #System.IDisposable, m) =
       this.TryFinally(
@@ -599,7 +598,7 @@ module ComputationExpressions =
             en.MoveNext,
             this.Delay(fun () -> exec en.Current))
       )
-  
+
 
   type LazyBuilder() =
     member inline this.Bind(m, f) = Lazy.bind f m
@@ -612,7 +611,7 @@ module ComputationExpressions =
       lazy (try Lazy.force m with exn -> f exn)
     member inline this.TryFinally (m, f) =
       lazy (try Lazy.force m finally f() )
-    
+
     member inline this.Zero () = this.Return ()
     member inline this.Using (disp: #System.IDisposable, m) =
       this.TryFinally(
@@ -636,9 +635,9 @@ module ComputationExpressions =
 
   open System.Threading.Tasks
   type AsyncBuilder with
-    member inline this.Bind(t:Task<'T>, f:'T -> Async<'R>) : Async<'R> = 
+    member inline this.Bind(t:Task<'T>, f:'T -> Async<'R>) : Async<'R> =
       async.Bind(Async.AwaitTask t, f)
-    member inline this.Bind(t:Task, f:unit -> Async<'R>) : Async<'R> = 
+    member inline this.Bind(t:Task, f:unit -> Async<'R>) : Async<'R> =
       async.Bind(Async.AwaitTask t, f)
 
   [<RequireQualifiedAccess>]
@@ -662,14 +661,14 @@ module Path =
     let filePath = new Uri(file)
     let path =
       new Uri (
-        if (parentDir |> String.endsWith (to_s Path.DirectorySeparatorChar) |> not) then
+        if (parentDir |> String.endsWith (string Path.DirectorySeparatorChar) |> not) then
           sprintf "%s%c" parentDir Path.DirectorySeparatorChar
         else
           parentDir
       )
     Uri.UnescapeDataString(
       path.MakeRelativeUri(filePath)
-      |> to_s
+      |> string
       |> String.replace '/' Path.DirectorySeparatorChar)
 
 module File =
@@ -679,7 +678,7 @@ module File =
 module Directory =
   let inline isHidden dir =
     DirectoryInfo(dir).Attributes.HasFlag(FileAttributes.Hidden)
-  
+
   let rec enumerateFilesRecursively includeHidden dir =
     seq {
       for x in Directory.EnumerateFiles dir do
@@ -710,8 +709,8 @@ module Task =
   let inline bind (f: 'a -> 'b task) (t: 'a task) : 'b task =
     t.ContinueWith(fun (x: _ task) -> f x.Result).Unwrap()
 
-  let inline returnValue x : _ task=
-    let s = TaskCompletionSource()
+  let inline returnValue x : 'a task =
+    let s = new TaskCompletionSource<'a>()
     s.SetResult x
     s.Task
 
@@ -832,7 +831,7 @@ module Shell =
       do p.StartInfo.FileName <- cmd
       do p.StartInfo.Arguments <- args |> String.concat " "
       do p.Start() |> ignore
-      do p.WaitForExit() 
+      do p.WaitForExit()
       return p.ExitCode
     }
 

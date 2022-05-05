@@ -14,7 +14,7 @@ module Generators =
             match config.subcommands |> List.tryFind (fun sc -> sc.Summary().name = List.head args) with
               | Some sc -> dig (List.tail args) sc
               | None -> (cmd, args)
-      
+
   let private getCommandInfo (cmd: Command<_>) =
     let config = (cmd.config CommandInfo.empty)
     (config.summary, config.subcommands, config.options)
@@ -40,7 +40,7 @@ module Generators =
           yield! (bLines.Tail |> List.map (sprintf "%s %s" indent))
         }
 
-    let private genParamNames pns subs options = 
+    let private genParamNames pns subs options =
       match pns with
         | Some xs -> xs |> String.concat " "
         | None ->
@@ -51,7 +51,7 @@ module Generators =
             | (false, false) -> "[options] <command>"
 
     /// given a help generator and a command, generates the help text.
-    let interpret (generator: Command<_> -> #seq<HelpElement>) (cmd: Command<_>) =
+    let interpret (generator: Command<_> -> HelpText) (cmd: Command<_>) =
       let (smry, scs, opts) = getCommandInfo cmd
       let dn = smry.displayName ?| smry.name
       let rec print elems =
@@ -103,26 +103,21 @@ module Generators =
       generator cmd |> print
 
     /// a default help generator for the command.
-    let defaultGenerator (cmd: Command<_>) =
+    let defaultGenerator (cmd: Command<_>) : HelpText =
       let (smry, scs, opts) = getCommandInfo cmd
-      helpText {
-        defaultUsage
-        emptyLine
-        text smry.description
-        emptyLine
-        conditionalSection "commands" (fun () -> scs |> List.isEmpty |> not) (
-          helpText { 
-            allSubcommands
-            emptyLine
-          }
-        )
-        conditionalSection "options" (fun () -> opts |> List.isEmpty |> not) (
-          helpText {
-            allOptions
-          }
-        )
+      seq {
+        yield HelpUsage
+        yield HelpEmptyLine
+        yield HelpRawString smry.description
+        yield HelpEmptyLine
+        if scs |> List.isEmpty |> not then
+          yield HelpAllSubcommands
+          yield HelpEmptyLine
+        if opts |> List.isEmpty |> not then
+          yield HelpAllOptions
+          yield HelpEmptyLine
       }
-    
+
     /// generates a help text from the arguments and the command.
     let generate args cmd =
       let (cmd, _) = dig args cmd
@@ -187,7 +182,7 @@ module Generators =
         | Values xs ->
             "_values" :: "-w" :: "'values'" :: (xs |> List.map (escape >> quote))
         | ValuesWithDescription xs ->
-            "_values" :: "-w" :: "'values'" :: (xs |> List.map (fun (v, descr) -> sprintf "%s[%s]" v descr) 
+            "_values" :: "-w" :: "'values'" :: (xs |> List.map (fun (v, descr) -> sprintf "%s[%s]" v descr)
                                                    |> List.map (escape >> quote))
         | Files (Some pattern) -> "_files" :: "-g" :: [pattern |> quote]
         | Files None -> ["_files"]
