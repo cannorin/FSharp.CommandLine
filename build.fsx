@@ -1,14 +1,14 @@
 #r "paket:
-source https://api.nuget.org/v3/index.json
 nuget FSharp.Core
 nuget Fake.DotNet.Cli
-nuget Fake.IO.FileSystem
 nuget Fake.DotNet.MSBuild
-nuget Fake.Core.Target
 nuget Fake.DotNet.AssemblyInfoFile
-nuget Fake.Core.ReleaseNotes //"
-
+nuget Fake.Core.Target
+nuget Fake.Core.ReleaseNotes
+nuget Fake.IO.FileSystem
+//"
 #load ".fake/build.fsx/intellisense.fsx"
+
 open Fake.Core
 open Fake.DotNet
 open Fake.IO
@@ -51,7 +51,7 @@ let disableLogging (c: MSBuild.CliArguments) =
   { c with ConsoleLogParameters = []; DistributedLoggers = None; DisableInternalBinLog = true }
 
 Target.create "WriteVersion" (fun _ ->
-  AssemblyInfoFile.createFSharp "./src/common/Version.fs" [
+  AssemblyInfoFile.createFSharp "./src/version.fs" [
     AssemblyInfo.Version release.AssemblyVersion
     AssemblyInfo.FileVersion release.AssemblyVersion
   ]
@@ -60,7 +60,7 @@ Target.create "WriteVersion" (fun _ ->
 Target.create "Clean" (fun _ ->
   !! "src/**/bin"
   ++ "src/**/obj"
-  |> Shell.cleanDirs 
+  |> Shell.cleanDirs
 )
 
 Target.create "Build" (fun _ ->
